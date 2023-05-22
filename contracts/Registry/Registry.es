@@ -34,8 +34,11 @@
   // 2 Commitment    |  Resolver      |
   //
   // REGISTERS
-  //  R4: (AvlTree) Registrars Avl tree.
-  //  R5: (AvlTree) Resolvers Avl tree.
+  //  R4: (AvlTree) Registrars AVL tree.
+  //  R5: (AvlTree) Resolvers AVL tree.
+  //  R6: (AvlTree) Reservations AVL tree.
+  //
+  // Note: `MintResolver` requires access to the Resolvers & Reservations AVL trees, store state centrally in this contract.
 
   // indexes
   val selfIndex = 0
@@ -48,16 +51,20 @@
   // nfts
   val newRegistrarNft = fromBase16("$newRegistrarNft")
   val mintResolverNft = fromBase16("$mintResolverNft")
+  val resolverReservationNft = fromBase16("$resolverReservationNft")
 
   // registers
   val inRegistrarsState = SELF.R4[AvlTree].get
   val outRegistrarsState = successorOutBox.R4[AvlTree].get
   val inResolversState = SELF.R5[AvlTree].get
   val outResolversState = successorOutBox.R5[AvlTree].get
+  val inReservationsState = SELF.R6[AvlTree].get
+  val outReservationsState = successorOutBox.R6[AvlTree].get
 
   // validity checks
   val validNewRegistrar = actionInBox.tokens(0)._1 == newRegistrarNft
   val validMintResolver = actionInBox.tokens(0)._1 == mintResolverNft
+  val validResolverReservation = actionInBox.tokens(0)._1 == resolverReservationNft
 
   // check registrars & resolver trees
   val validRegistrars = if (!validNewRegistrar) {
@@ -68,11 +75,16 @@
     inResolversState.digest == outResolversState.digest // ensure resolvers are unchanged
   } else true // MintResolver script will validate/update tree
 
+  val validReservations = if (!validResolverReservation) {
+    inReservationsState.digest == outReservationsState.digest // ensure reservations are unchanged
+  } else true // ResolverReservation script will validate/update tree
+
   val validSuccessorBox = successorOutBox.propositionBytes == SELF.propositionBytes &&
     validRegistrars &&
-    validResolvers
+    validResolvers &&
+    validReservations
 
-  val validAction = validNewRegistrar || validMintResolver
+  val validAction = validNewRegistrar || validMintResolver || validResolverReservation
 
   sigmaProp(validSuccessorBox && validAction)
 }
