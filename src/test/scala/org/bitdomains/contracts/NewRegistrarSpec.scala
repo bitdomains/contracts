@@ -7,39 +7,12 @@ import org.bitdomains.contracts.boxes.{
 }
 import org.bitdomains.contracts.transactions.NewRegistrarTransaction
 import org.ergoplatform.appkit._
-import org.ergoplatform.ErgoAddressEncoder
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should
 import scorex.crypto.hash.Blake2b256
 import sigmastate.lang.exceptions.InterpreterException
 
 class NewRegistrarSpec extends AnyFlatSpec with should.Matchers {
-  val ergoClient: ErgoClient = RestApiErgoClient.create(
-    "http://168.138.185.215:9052/",
-    NetworkType.TESTNET,
-    "",
-    ""
-  )
-  val addrEnc = new ErgoAddressEncoder(NetworkType.TESTNET.networkPrefix)
-  val fakeIndex: Short = 1
-  val fakeTxId1 =
-    "f9e5ce5aa0d95f5d54a7bc89c46730d9662397067250aa18a0039631c0f5b809"
-  val fakeTxId2 =
-    "f9e5ce5aa0d95f5d54a7bc89c46730d9662397067250aa18a0039631c0f5b808"
-  val fakeTxId3 =
-    "f9e5ce5aa0d95f5d54a7bc89c46730d9662397067250aa18a0039631c0f5b807"
-  val fakeTxId4 =
-    "f9e5ce5aa0d95f5d54a7bc89c46730d9662397067250aa18a0039631c0f5b806"
-  val fakeTxId5 =
-    "f9e5ce5aa0d95f5d54a7bc89c46730d9662397067250aa18a0039631c0f5b105"
-  val changeAddress = "9gQqZyxyjAptMbfW1Gydm3qaap11zd6X9DrABwgEE9eRdRvd27p"
-  val fakeScript = "sigmaProp(true)"
-  lazy val minStorageRent = 100000L
-
-  def bytesToHex(bytes: Array[Byte]): String = {
-    bytes.map("%02x".format(_)).mkString
-  }
-
   "NewRegistrar" should "fail if RegistryAdmin data input is missing" in {
     ergoClient.execute(implicit ctx => {
       val prover = ctx
