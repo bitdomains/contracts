@@ -13,6 +13,7 @@
   //
   // VARIABLES
   //  0: (Coll[Byte]) Reservation update AVL tree proof
+  //  1: (Coll[Byte]) Resolvers AVL tree proof
 
   // indexes
   val registryIndex = 0
@@ -28,6 +29,7 @@
   // registers
   val hashedResolverReservation = requestInBox.R4[Coll[Byte]].get
   val buyerPk = requestInBox.R5[GroupElement].get
+  val resolveAddress = requestInBox.R6[Coll[Byte]].get
 
   // scripts
   val reservedResolverScriptHash = fromBase16("$reservedResolverScriptHash")
@@ -45,11 +47,12 @@
     // valid registers
     val validHashedResolver = resolverOutBox.R4[Coll[Byte]].get == hashedResolverReservation
     val validBuyerPk = resolverOutBox.R5[GroupElement].get == buyerPk
+    val validAddress = resolverOutBox.R6[Coll[Byte]].get == resolveAddress
     // valid nft
     val nft = resolverOutBox.tokens(0)
     val validOutNft = nft._1 == expectedNftId && nft._2 == 1L
 
-    validScript && validHashedResolver && validBuyerPk && validOutNft
+    validScript && validHashedResolver && validBuyerPk && validAddress && validOutNft
   }
 
   val validReservedResolverStateUpdate = {
@@ -63,6 +66,13 @@
     expectedState.digest == providedUpdatedTree.digest
   }
 
+  val isNewResolver = {
+    val resolverState = registryInBox.R5[AvlTree].get
+    val proof = getVar[Coll[Byte]](1).get
+
+    !resolverState.contains(hashedResolverReservation, proof)
+  }
+
   // valid funds are paid to bitdomains,etc
   val validFundsPaid = true
 
@@ -73,6 +83,7 @@
     validRegistryInBox &&
     validReservedResolverBox &&
     validReservedResolverStateUpdate &&
+    isNewResolver &&
     validFundsPaid &&
     validSuccessorBox
   )

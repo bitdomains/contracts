@@ -17,25 +17,26 @@
   // 0 Registry                   |  Registry      |
   // 1 MintResolver               |  MintResolver  |
   // 2 MintResolverRequest        |  Resolver      |
-  // 3 MintResolverCommitment     |                |
+  // 3 ReservedResolver           |                |
   //
   // VARIABLES
   //  0: (Coll[Byte]) Registrars AVL tree proof
   //  1: (Coll[Byte]) Resolvers AVL tree proof
+  //  2: (Coll[Coll[Byte]]) Reservations AVL tree proof
+  //                          coll[0] = tree before removing resolver hash
+  //                          coll[1] = tree after removing resolver hash
 
   // constants
   // Could use a configuration box or something?
   val MinLabelLength = 3
   val MaxLabelLength = 15 // could probably be longer
-  val MinCommitmentAge = 3 // 3 blocks, ~30 mins
-  val MaxCommitmentAge = 18 // 18 blocks, ~3 hours
 
   // indexes
   val registryIndex = 0
   val selfIndex = 1
   val resolverOutIndex = 2
   val requestInIndex = 2
-  val commitmentInIndex = 3
+  val reservationInIndex = 3
 
   // boxes
   val successorOutBox = OUTPUTS(selfIndex)
@@ -43,15 +44,15 @@
   val registryOutBox = OUTPUTS(registryIndex)
   val resolverOutBox = OUTPUTS(resolverOutIndex)
   val requestInBox = INPUTS(requestInIndex)
-  val commitmentInBox = INPUTS(commitmentInIndex)
+  val reservationInBox = INPUTS(reservationInIndex)
 
   // registers
-  val commitmentSecret = requestInBox.R4[Coll[Byte]].get
-  val commitBoxId = requestInBox.R5[Coll[Byte]].get
-  val buyerPk = requestInBox.R6[GroupElement].get
-  val label = requestInBox.R7[Coll[Byte]].get
-  val tld = requestInBox.R8[Coll[Byte]].get
-  val resolveAddress = requestInBox.R9[Coll[Byte]].get
+  val reservedResolverBoxId = requestInBox.R4[Coll[Byte]].get
+  val buyerPk = requestInBox.R5[GroupElement].get
+  val label = requestInBox.R6[Coll[Byte]].get
+  val tld = requestInBox.R7[Coll[Byte]].get
+  val hashedResolver = blake2b256(label ++ tld)
+  val resolveAddress = requestInBox.R8[Coll[Byte]].get
 
   // scripts
   val resolverScriptHash = fromBase16("$resolverScriptHash")
@@ -61,26 +62,6 @@
   val registryNft = fromBase16("$registryNft")
 
   // validity
-  val validCommitment = {
-    // ensure the commitment box supplied was the one expected as defined
-    // by the MintResolverRequest.
-    val isExpectedCommitBox = commitBoxId == commitmentInBox.id
-    // valid commit age
-    val commitAge = HEIGHT - commitmentInBox.creationInfo._1
-    val validCommitAge = commitAge >= MinCommitmentAge && commitAge <= MaxCommitmentAge
-    // valid commit hash
-    val expectedCommitment = blake2b256(
-      commitmentSecret ++
-      buyerPk.getEncoded ++
-      label ++
-      tld ++
-      resolveAddress
-    )
-    val actualCommitment = commitmentInBox.R4[Coll[Byte]].get
-
-    isExpectedCommitBox && (expectedCommitment == actualCommitment) && validCommitAge
-  }
-
   // valid registry in box
   val validRegistryInBox = registryInBox.tokens(0)._1 == registryNft
 
@@ -117,13 +98,36 @@
   val validResolverTreeUpdate = {
     val resolversProof = getVar[Coll[Byte]](1).get
     val currentResolvers = registryInBox.R5[AvlTree].get
-    val hashedResolver = blake2b256(label ++ tld)
 
     val insertOps: Coll[(Coll[Byte], Coll[Byte])] = Coll((hashedResolver, expectedNftId)) // expectedNftId validated in validResolverBox
     val expectedResolvers = currentResolvers.insert(insertOps, resolversProof).get
     val updatedResolvers = registryOutBox.R5[AvlTree].get
 
     expectedResolvers.digest == updatedResolvers.digest
+  }
+
+  val validReservationTreeUpdate = {
+    val proof = getVar[Coll[Coll[Byte]]](2).get(1)
+
+    val reservationsState = registryInBox.R6[AvlTree].get
+    val removeKeys: Coll[Coll[Byte]] = Coll(hashedResolver)
+    val expectedState = reservationsState.remove(removeKeys, proof).get
+    val updatedReservations = registryOutBox.R6[AvlTree].get
+
+    expectedState.digest == updatedReservations.digest
+  }
+
+  val validReservation = {
+    // get expected nft for reserved resolver box
+    val proof = getVar[Coll[Coll[Byte]]](2).get(0)
+    val reservationsState = registryInBox.R6[AvlTree].get
+    val expectedNft = reservationsState.get(hashedResolver, proof).get
+    // validity checks
+    val validReservationBoxId = reservationInBox.id == reservedResolverBoxId
+    val validNft = reservationInBox.tokens(0)._1 == expectedNft
+    val validHashedResolver = hashedResolver == reservationInBox.R4[Coll[Byte]].get // user making request knew name ++ tld, hash matches
+    // ensure correct buyer pk
+    // ensure correct address
   }
 
   val validFundsPaid = {
@@ -142,7 +146,6 @@
 
   sigmaProp(
     validRegistryInBox &&
-    validCommitment &&
     validLabel &&
     validTld &&
     validResolverBox &&
