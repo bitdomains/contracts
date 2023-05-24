@@ -17,12 +17,11 @@
 
   // indexes
   val registryIndex = 0
-  val selfIndex = 1
 
   // boxes
   val registryInBox = INPUTS(registryIndex)
   val registryOutBox = OUTPUTS(registryIndex)
-  val successorOutBox = OUTPUTS(selfIndex)
+  val successorOutBox = OUTPUTS(1)
   val requestInBox = INPUTS(2)
   val resolverOutBox = OUTPUTS(2)
 
