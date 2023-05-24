@@ -1,7 +1,7 @@
-package org.bitdomains.contracts.transactions
+package org.bitdomains.contracts.registry.newregistrar
 
-import org.bitdomains.contracts.boxes.RegistryAdminBoxBuilder
 import org.bitdomains.contracts.builders.TransactionBuilder
+import org.bitdomains.contracts.registry.RegistryAdminBoxBuilder
 import org.ergoplatform.appkit.{
   BlockchainContext,
   InputBox,
@@ -9,7 +9,7 @@ import org.ergoplatform.appkit.{
   UnsignedTransaction
 }
 
-case class NewRegistrarTransaction(implicit ctx: BlockchainContext)
+case class NewRegistrarTransactionBuilder(implicit ctx: BlockchainContext)
     extends TransactionBuilder {
 
   private var registryIn: Option[InputBox] = None

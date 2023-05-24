@@ -1,4 +1,4 @@
-package org.bitdomains.contracts.boxes
+package org.bitdomains.contracts.registry.newregistrar
 
 import bitdomains.Constants.{newRegistrarNft, newRegistrarScript}
 import org.bitdomains.contracts.builders.BoxBuilder

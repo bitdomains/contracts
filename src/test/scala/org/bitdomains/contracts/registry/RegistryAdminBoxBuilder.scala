@@ -1,9 +1,9 @@
-package org.bitdomains.contracts.boxes
+package org.bitdomains.contracts.registry
 
 import bitdomains.Constants.registryAdminNft
 import org.bitdomains.contracts.builders.BoxBuilder
 import org.bitdomains.contracts.defaultScript
-import org.ergoplatform.appkit.{BlockchainContext, ErgoValue, OutBox}
+import org.ergoplatform.appkit.{BlockchainContext, OutBox}
 
 case class RegistryAdminBoxBuilder(implicit ctx: BlockchainContext)
     extends BoxBuilder(defaultScript, registryAdminNft) {

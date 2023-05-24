@@ -1,10 +1,7 @@
-package org.bitdomains.contracts.boxes
+package org.bitdomains.contracts.registry
 
 import bitdomains.Constants.{registryNft, registryScript}
-import io.getblok.getblok_plasma.ByteConversion.{
-  convertsArrBytes,
-  convertsString
-}
+import io.getblok.getblok_plasma.ByteConversion.{convertsArrBytes, convertsString}
 import io.getblok.getblok_plasma.PlasmaParameters
 import io.getblok.getblok_plasma.collections.PlasmaMap
 import org.bitdomains.contracts.RegistryState
