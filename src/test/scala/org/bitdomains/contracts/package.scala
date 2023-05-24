@@ -2,7 +2,15 @@ package org.bitdomains
 
 import io.getblok.getblok_plasma.PlasmaParameters
 import io.getblok.getblok_plasma.collections.PlasmaMap
-import org.ergoplatform.appkit.{ErgoClient, NetworkType, RestApiErgoClient}
+import org.ergoplatform.appkit.{
+  ErgoClient,
+  JavaHelpers,
+  NetworkType,
+  RestApiErgoClient,
+  SecretString
+}
+import org.ergoplatform.wallet.secrets.ExtendedSecretKey
+import scorex.utils.Random
 import sigmastate.AvlTreeFlags
 
 package object contracts {
@@ -22,16 +30,29 @@ package object contracts {
     )
   }
 
+  def randomErgoId: String = {
+    bytesToHex(Random.randomBytes(32))
+  }
+
   def bytesToHex(bytes: Array[Byte]): String = {
     bytes.map("%02x".format(_)).mkString
   }
 
   def ergoClient: ErgoClient = {
     RestApiErgoClient.create(
-      "http://168.138.185.215:9052/",
+      "http://213.239.193.208:9052/",
       NetworkType.TESTNET,
       "",
       ""
     )
+  }
+
+  def walletSk: ExtendedSecretKey = {
+    val mnemonic = SecretString.create("not real mnemonic")
+    val rootSecret =
+      JavaHelpers.seedToMasterKey(mnemonic, SecretString.empty(), true)
+    val path = JavaHelpers.eip3DerivationParent
+
+    rootSecret.derive(path)
   }
 }

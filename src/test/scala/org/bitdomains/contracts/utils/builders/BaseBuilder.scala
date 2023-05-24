@@ -1,4 +1,4 @@
-package org.bitdomains.contracts.builders
+package org.bitdomains.contracts.utils.builders
 
 import org.ergoplatform.appkit.{BlockchainContext, UnsignedTransactionBuilder}
 

@@ -2,7 +2,7 @@ package org.bitdomains.contracts.registry.newregistrar
 
 import org.bitdomains.contracts._
 import org.bitdomains.contracts.registry.RegistryBoxBuilder
-import org.bitdomains.contracts.scenarios.ContractScenario
+import org.bitdomains.contracts.utils.scenarios.ContractScenario
 import org.ergoplatform.appkit.{BlockchainContext, ContextVar, InputBox, OutBox}
 import scorex.crypto.hash.Blake2b256
 

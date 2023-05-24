@@ -1,4 +1,4 @@
-package org.bitdomains.contracts.builders
+package org.bitdomains.contracts.utils.builders
 
 import org.bitdomains.contracts.defaultScript
 import org.ergoplatform.appkit.{
@@ -45,5 +45,9 @@ abstract class BoxBuilder(
     }
 
     builder
+  }
+
+  override def build(): OutBox = {
+    partialBuild().build()
   }
 }

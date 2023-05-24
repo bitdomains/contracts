@@ -4,7 +4,8 @@
 
 - Fees for contract developer & ui developer when minting a Resolver
 - Stable pricing using oracle USD price feed
-- Scalability - only one name can be minted per tx (per block i think?)
+- New TLDs should probably be managed by another box to avoid needing to use them in `Registry.newRegistrar` - this requires chained tx so would require off-chain bots to be able
+to perform the privlidged "add TLD operation"
 
 ## Maybe
 
@@ -54,3 +55,4 @@ This is the current setup but copy+pasted for each test, use fixtures
 
 Can be refunded for a fee
   - bots receive higher fee for this compared to "reservation expired anyone can revoke"
+

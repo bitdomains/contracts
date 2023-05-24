@@ -5,7 +5,7 @@ import io.getblok.getblok_plasma.ByteConversion.{convertsArrBytes, convertsStrin
 import io.getblok.getblok_plasma.PlasmaParameters
 import io.getblok.getblok_plasma.collections.PlasmaMap
 import org.bitdomains.contracts.RegistryState
-import org.bitdomains.contracts.builders.BoxBuilder
+import org.bitdomains.contracts.utils.builders.BoxBuilder
 import org.ergoplatform.appkit._
 import sigmastate.AvlTreeFlags
 

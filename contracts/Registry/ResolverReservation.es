@@ -12,8 +12,8 @@
   // 2 ReserveResolverRequest     |  ReservedResolver     |
   //
   // VARIABLES
-  //  0: (Coll[Byte]) Reservation update AVL tree proof
-  //  1: (Coll[Byte]) Resolvers AVL tree proof
+  //  0: (Coll[Byte]) Check existing Resolvers AVL tree proof
+  //  1: (Coll[Byte]) Reservation update AVL tree proof
 
   // indexes
   val registryIndex = 0
@@ -55,7 +55,7 @@
   }
 
   val validReservedResolverStateUpdate = {
-    val reservationProof = getVar[Coll[Byte]](0).get
+    val reservationProof = getVar[Coll[Byte]](1).get
     val currentState = registryInBox.R6[AvlTree].get
 
     val insertOps: Coll[(Coll[Byte], Coll[Byte])] = Coll((hashedResolverReservation, expectedNftId))
@@ -65,11 +65,12 @@
     expectedState.digest == providedUpdatedTree.digest
   }
 
+  // requested reserved resolver doesn't already exist as a fully minted `Resolver`
   val isNewResolver = {
     val resolverState = registryInBox.R5[AvlTree].get
-    val proof = getVar[Coll[Byte]](1).get
-
-    !resolverState.contains(hashedResolverReservation, proof)
+    val proof = getVar[Coll[Byte]](0).get
+    val exists = resolverState.contains(hashedResolverReservation, proof)
+    !exists
   }
 
   // valid funds are paid to bitdomains,etc
@@ -78,12 +79,15 @@
   val validSuccessorBox = successorOutBox.propositionBytes == SELF.propositionBytes && // script preserved
     successorOutBox.tokens == SELF.tokens // nft preserved
 
-  sigmaProp(
-    validRegistryInBox &&
-    validReservedResolverBox &&
-    validReservedResolverStateUpdate &&
-    isNewResolver &&
-    validFundsPaid &&
-    validSuccessorBox
+  sigmaProp(true
+//    validRegistryInBox
   )
+//  sigmaProp(
+//    validRegistryInBox &&
+//    validReservedResolverBox &&
+//    validReservedResolverStateUpdate &&
+//    isNewResolver &&
+//    validFundsPaid &&
+//    validSuccessorBox
+//  )
 }

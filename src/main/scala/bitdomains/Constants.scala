@@ -25,7 +25,8 @@ object Constants {
     "registryAdminNft" -> registryAdminNft,
     "registryNft" -> registryNft,
     "resolverReservationNft" -> resolverReservationNft,
-    "resolverScriptHash" -> Utils.bytesToHex(resolverScriptHash)
+    "resolverScriptHash" -> Utils.bytesToHex(resolverScriptHash),
+    "reservedResolverScriptHash" -> Utils.bytesToHex(reservedResolverScriptHash)
   )
 
   private def substitute(
@@ -59,6 +60,19 @@ object Constants {
   val newRegistrarScript: String =
     readContract("Registry/NewRegistrar.es", nftDictionary)
 
+  val resolverReservationScript: String =
+    readContract("Registry/ResolverReservation.es", nftDictionary)
+
   val mintResolverScript: String =
     readContract("Registry/MintResolver.es", nftDictionary)
+
+  val reserveResolverRequestScript: String =
+    readContract("ReserveResolverRequest.es", nftDictionary)
+
+  val reservedResolverScript: String =
+    readContract("ReservedResolver.es", Map.empty)
+  private lazy val reservedResolverScriptTree =
+    Utils.compile(Map.empty, resolverScript, network)
+  lazy val reservedResolverScriptHash: Digest32 =
+    Blake2b256.hash(reservedResolverScriptTree.bytes)
 }

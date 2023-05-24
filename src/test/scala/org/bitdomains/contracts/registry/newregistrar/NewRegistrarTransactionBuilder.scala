@@ -1,7 +1,7 @@
 package org.bitdomains.contracts.registry.newregistrar
 
-import org.bitdomains.contracts.builders.TransactionBuilder
 import org.bitdomains.contracts.registry.RegistryAdminBoxBuilder
+import org.bitdomains.contracts.utils.builders.TransactionBuilder
 import org.ergoplatform.appkit.{
   BlockchainContext,
   InputBox,
@@ -27,32 +27,32 @@ case class NewRegistrarTransactionBuilder(implicit ctx: BlockchainContext)
   private var adminOut: Option[OutBox] = Some(RegistryAdminBoxBuilder().build())
 
   def withRegistryIn(box: InputBox): this.type = {
-    this.registryIn = Some(box)
+    registryIn = Some(box)
     this
   }
 
   def withRegistryOut(box: OutBox): this.type = {
-    this.registryOut = Some(box)
+    registryOut = Some(box)
     this
   }
 
   def withNewRegistrarIn(box: InputBox): this.type = {
-    this.newRegistrarIn = Some(box)
+    newRegistrarIn = Some(box)
     this
   }
 
   def withNewRegistrarOut(box: OutBox): this.type = {
-    this.newRegistrarOut = Some(box)
+    newRegistrarOut = Some(box)
     this
   }
 
   def withAdminIn(box: InputBox): this.type = {
-    this.adminIn = Some(box)
+    adminIn = Some(box)
     this
   }
 
   def withAdminOut(box: OutBox): this.type = {
-    this.adminOut = Some(box)
+    adminOut = Some(box)
     this
   }
 
@@ -60,10 +60,10 @@ case class NewRegistrarTransactionBuilder(implicit ctx: BlockchainContext)
     this
       .partialBuild()
       .addInputs(
-        Seq(this.registryIn, this.newRegistrarIn, this.adminIn).flatten: _*
+        Seq(registryIn, newRegistrarIn, adminIn).flatten: _*
       )
       .addOutputs(
-        Seq(this.registryOut, this.newRegistrarOut, this.adminOut).flatten: _*
+        Seq(registryOut, newRegistrarOut, adminOut).flatten: _*
       )
       .build()
   }
