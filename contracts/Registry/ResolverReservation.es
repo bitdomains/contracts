@@ -5,9 +5,12 @@
   //
   // [1] Mint Reserved Resolver
   //
+  // Buyers MUST ensure the TLD is valid and naming rules are followed in the reserveration request hash.
+  // Otherwise a reserved resolver could be minted that is unclaimable and unrefundable.
+  //
   //   Input                      |  Output               |  Data-Input
   // --------------------------------------------------------------------
-  // 0 Registry                   |  Registry             |  Config
+  // 0 Registry                   |  Registry             |
   // 1 ResolverReservation        |  ResolverReservation  |
   // 2 ReserveResolverRequest     |  ReservedResolver     |
   //

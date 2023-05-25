@@ -1,6 +1,5 @@
 package org.bitdomains.contracts.registry.resolverreservation
 
-import org.bitdomains.contracts.admin.config.ConfigBoxBuilder
 import org.bitdomains.contracts.{
   RegistryState,
   bytesToHex,
@@ -61,11 +60,6 @@ case class ResolverReservationContractScenario(
   var reservedResolverOut: OutBox =
     ReservedResolverBoxBuilder().withNftId(expectedReservedResolverNft).build()
 
-  var configDataIn: InputBox = ConfigBoxBuilder()
-    .withTldState(registrarsMap)
-    .build()
-    .convertToInputWith(fakeTxId3, fakeIndex)
-
   def doAvlOps(
       hashedResolver: Array[Byte] = this.hashedResolver,
       insertedResolverNft: String = this.expectedReservedResolverNft
@@ -92,6 +86,5 @@ case class ResolverReservationContractScenario(
       .withResolverReservationOut(resolverReservationOut)
       .withReserveResolverRequestIn(reserveResolverRequestIn)
       .withReservedResolverOut(reservedResolverOut)
-      .withConfigDataIn(configDataIn)
   }
 }
