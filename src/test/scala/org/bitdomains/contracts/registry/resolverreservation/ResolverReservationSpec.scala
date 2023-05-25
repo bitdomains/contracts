@@ -9,8 +9,7 @@ class ResolverReservationSpec extends AnyFlatSpec with should.Matchers {
     ergoClient.execute(implicit ctx => {
       val scenario = ResolverReservationContractScenario()
 
-      scenario.isNewResolverAvlOp()
-      scenario.insertReservationAvlOp()
+      scenario.doAvlOps()
 
       noException should be thrownBy scenario.mkAndSignTx()
     })

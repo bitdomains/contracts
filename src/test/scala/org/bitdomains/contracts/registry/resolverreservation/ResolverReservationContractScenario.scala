@@ -4,8 +4,7 @@ import org.bitdomains.contracts.{
   RegistryState,
   defaultRegistryMap,
   fakeIndex,
-  fakeTxId3,
-  randomErgoId
+  fakeTxId3
 }
 import org.bitdomains.contracts.registry.RegistryBoxBuilder
 import org.bitdomains.contracts.reservedresolver.ReservedResolverBoxBuilder
@@ -22,7 +21,9 @@ case class ResolverReservationContractScenario(
 )(implicit
     ctx: BlockchainContext
 ) extends ContractScenario[ResolverReservationTransactionBuilder] {
-  val reservedResolverNft: String = randomErgoId
+  def expectedReservedResolverNft: String = {
+    registryIn.getId.toString
+  }
 
   val hashedResolver: Array[Byte] = Blake2b256(label ++ tld)
 
@@ -36,11 +37,14 @@ case class ResolverReservationContractScenario(
     RegistryBoxBuilder()
       .withValue(200000000000000000L)
       .withRegistrarsMap(registrarsMap)
+      .withReservationsMap(reservationsMap)
       .build()
       .convertToInputWith(fakeTxId3, fakeIndex)
 
   var registryOut: OutBox =
-    RegistryBoxBuilder().withRegistrarsMap(registrarsMap).build()
+    RegistryBoxBuilder()
+      .withRegistrarsMap(registrarsMap)
+      .build()
 
   var resolverReservationIn: InputBox = ResolverReservationBoxBuilder()
     .build()
@@ -54,27 +58,24 @@ case class ResolverReservationContractScenario(
       .build()
       .convertToInputWith(fakeTxId3, fakeIndex)
 
-  var reservedResolverOut: OutBox = ReservedResolverBoxBuilder().build()
+  var reservedResolverOut: OutBox =
+    ReservedResolverBoxBuilder().withNftId(expectedReservedResolverNft).build()
 
-  def isNewResolverAvlOp(
-      hashedResolver: Array[Byte] = this.hashedResolver
+  def doAvlOps(
+      hashedResolver: Array[Byte] = this.hashedResolver,
+      insertedResolverNft: String = this.expectedReservedResolverNft
   ): Unit = {
-    val opResult = resolversMap.lookUp(hashedResolver)
-
-    resolverReservationIn = resolverReservationIn.withContextVars(
-      new ContextVar(0.toByte, opResult.proof.ergoValue)
+    val lookupOp = resolversMap.lookUp(hashedResolver)
+    val insertOp = reservationsMap.insert(
+      (hashedResolver, insertedResolverNft)
     )
-  }
-
-  def insertReservationAvlOp(
-      hashedResolver: Array[Byte] = this.hashedResolver
-  ): Unit = {
-    val opResult = reservationsMap.insert((hashedResolver, reservedResolverNft))
 
     resolverReservationIn = resolverReservationIn.withContextVars(
-      new ContextVar(1.toByte, opResult.proof.ergoValue)
+      new ContextVar(0.toByte, lookupOp.proof.ergoValue),
+      new ContextVar(1.toByte, insertOp.proof.ergoValue)
     )
     registryOut = RegistryBoxBuilder()
+      .withRegistrarsMap(registrarsMap)
       .withReservationsMap(reservationsMap)
       .build()
   }

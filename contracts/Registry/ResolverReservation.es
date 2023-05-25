@@ -79,15 +79,12 @@
   val validSuccessorBox = successorOutBox.propositionBytes == SELF.propositionBytes && // script preserved
     successorOutBox.tokens == SELF.tokens // nft preserved
 
-  sigmaProp(true
-//    validRegistryInBox
+  sigmaProp(
+    validRegistryInBox &&
+    validReservedResolverBox &&
+    validReservedResolverStateUpdate &&
+    isNewResolver &&
+    validFundsPaid &&
+    validSuccessorBox
   )
-//  sigmaProp(
-//    validRegistryInBox &&
-//    validReservedResolverBox &&
-//    validReservedResolverStateUpdate &&
-//    isNewResolver &&
-//    validFundsPaid &&
-//    validSuccessorBox
-//  )
 }
