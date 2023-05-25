@@ -8,21 +8,20 @@ object Constants {
   val network: ErgoAddressEncoder.NetworkPrefix = TestnetNetworkPrefix
 
   // Registry action nfts
-  val newRegistrarNft =
-    "e66257a0f046789ecb95893f56a16e4446880b874b763d1f8cdc287abecc6c58"
   val mintResolverNft =
     "ba57c53a215c8d135ff067e3e7b3a11da64690041a20f659e3a1cc14b1c7ae37"
-  val registryAdminNft =
+  val adminNft =
     "94af8793a1f7b427831dcb48368ffc55c68d319d525ea24510ac38b75e280a8c"
+  val configNfg =
+    "94af8793a1f7b427831dcb48368ffc55c68d319d525ea24510ac38b75e280ccc"
   val registryNft =
     "94af8793a1f7b427831dcb48368ffc55c68d319d525ea24510ac38b75e280a8e"
   val resolverReservationNft =
     "94af8793a1f7b427831dcb48368ffc55c68d319d525ea24510ac38b75e280a8d"
 
   val nftDictionary: Map[String, String] = Map(
-    "newRegistrarNft" -> newRegistrarNft,
     "mintResolverNft" -> mintResolverNft,
-    "registryAdminNft" -> registryAdminNft,
+    "adminNft" -> adminNft,
     "registryNft" -> registryNft,
     "resolverReservationNft" -> resolverReservationNft,
     "resolverScriptHash" -> Utils.bytesToHex(resolverScriptHash),
@@ -64,9 +63,6 @@ object Constants {
   val registryScript: String =
     readContract("Registry/Registry.es", nftDictionary)
 
-  val newRegistrarScript: String =
-    readContract("Registry/NewRegistrar.es", nftDictionary)
-
   val resolverReservationScript: String =
     readContract("Registry/ResolverReservation.es", nftDictionary)
 
@@ -75,4 +71,6 @@ object Constants {
 
   val reserveResolverRequestScript: String =
     readContract("ReserveResolverRequest.es", nftDictionary)
+
+  val configScript: String = readContract("Admin/Config.es", nftDictionary)
 }

@@ -40,7 +40,7 @@ package object contracts {
 
   def ergoClient: ErgoClient = {
     RestApiErgoClient.create(
-      "http://213.239.193.208:9052/",
+      "https://ergo-node-testnet-weu.zoomout.io",
       NetworkType.TESTNET,
       "",
       ""

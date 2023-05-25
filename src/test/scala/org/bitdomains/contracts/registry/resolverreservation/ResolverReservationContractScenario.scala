@@ -1,7 +1,9 @@
 package org.bitdomains.contracts.registry.resolverreservation
 
+import org.bitdomains.contracts.admin.config.ConfigBoxBuilder
 import org.bitdomains.contracts.{
   RegistryState,
+  bytesToHex,
   defaultRegistryMap,
   fakeIndex,
   fakeTxId3
@@ -29,21 +31,19 @@ case class ResolverReservationContractScenario(
 
   val registrarsMap: RegistryState = {
     val map = defaultRegistryMap
-    map.insert((Blake2b256(tld), "01"))
+    map.insert((Blake2b256(tld), bytesToHex(tld.getBytes)))
     map
   }
 
   var registryIn: InputBox =
     RegistryBoxBuilder()
       .withValue(200000000000000000L)
-      .withRegistrarsMap(registrarsMap)
       .withReservationsMap(reservationsMap)
       .build()
       .convertToInputWith(fakeTxId3, fakeIndex)
 
   var registryOut: OutBox =
     RegistryBoxBuilder()
-      .withRegistrarsMap(registrarsMap)
       .build()
 
   var resolverReservationIn: InputBox = ResolverReservationBoxBuilder()
@@ -61,6 +61,11 @@ case class ResolverReservationContractScenario(
   var reservedResolverOut: OutBox =
     ReservedResolverBoxBuilder().withNftId(expectedReservedResolverNft).build()
 
+  var configDataIn: InputBox = ConfigBoxBuilder()
+    .withTldState(registrarsMap)
+    .build()
+    .convertToInputWith(fakeTxId3, fakeIndex)
+
   def doAvlOps(
       hashedResolver: Array[Byte] = this.hashedResolver,
       insertedResolverNft: String = this.expectedReservedResolverNft
@@ -75,7 +80,6 @@ case class ResolverReservationContractScenario(
       new ContextVar(1.toByte, insertOp.proof.ergoValue)
     )
     registryOut = RegistryBoxBuilder()
-      .withRegistrarsMap(registrarsMap)
       .withReservationsMap(reservationsMap)
       .build()
   }
@@ -88,5 +92,6 @@ case class ResolverReservationContractScenario(
       .withResolverReservationOut(resolverReservationOut)
       .withReserveResolverRequestIn(reserveResolverRequestIn)
       .withReservedResolverOut(reservedResolverOut)
+      .withConfigDataIn(configDataIn)
   }
 }

@@ -7,7 +7,7 @@
   //
   //   Input                      |  Output               |  Data-Input
   // --------------------------------------------------------------------
-  // 0 Registry                   |  Registry             |
+  // 0 Registry                   |  Registry             |  Config
   // 1 ResolverReservation        |  ResolverReservation  |
   // 2 ReserveResolverRequest     |  ReservedResolver     |
   //
@@ -56,18 +56,18 @@
 
   val validReservedResolverStateUpdate = {
     val reservationProof = getVar[Coll[Byte]](1).get
-    val currentState = registryInBox.R6[AvlTree].get
+    val currentState = registryInBox.R5[AvlTree].get
 
     val insertOps: Coll[(Coll[Byte], Coll[Byte])] = Coll((hashedResolverReservation, expectedNftId))
     val expectedState = currentState.insert(insertOps, reservationProof).get
-    val providedUpdatedTree = registryOutBox.R6[AvlTree].get
+    val providedUpdatedTree = registryOutBox.R5[AvlTree].get
 
     expectedState.digest == providedUpdatedTree.digest
   }
 
   // requested reserved resolver doesn't already exist as a fully minted `Resolver`
   val isNewResolver = {
-    val resolverState = registryInBox.R5[AvlTree].get
+    val resolverState = registryInBox.R4[AvlTree].get
     val proof = getVar[Coll[Byte]](0).get
     val exists = resolverState.contains(hashedResolverReservation, proof)
     !exists

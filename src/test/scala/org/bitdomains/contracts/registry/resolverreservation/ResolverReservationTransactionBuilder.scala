@@ -17,6 +17,7 @@ case class ResolverReservationTransactionBuilder(implicit
   private var resolverReservationOut: Option[OutBox] = None
   private var reserveResolverRequestIn: Option[InputBox] = None
   private var reservedResolverOut: Option[OutBox] = None
+  private var configDataIn: Option[InputBox] = None
 
   def withRegistryIn(box: InputBox): this.type = {
     this.registryIn = Some(box)
@@ -48,6 +49,11 @@ case class ResolverReservationTransactionBuilder(implicit
     this
   }
 
+  def withConfigDataIn(box: InputBox): this.type = {
+    this.configDataIn = Some(box)
+    this
+  }
+
   override def build(): UnsignedTransaction = {
     this
       .partialBuild()
@@ -65,6 +71,7 @@ case class ResolverReservationTransactionBuilder(implicit
           reservedResolverOut
         ).flatten: _*
       )
+      .addDataInputs(Seq(configDataIn).flatten: _*)
       .build()
   }
 }
