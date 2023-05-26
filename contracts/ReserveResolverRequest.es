@@ -3,10 +3,22 @@
   //
   // TRANSACTIONS
   //
-  // [1] Resolver reservation
+  // [1] Mint Reserved Resolver
+  //
+  // Create a resolver (label ++ tld) reservation that can be later minted for a real resolver.
+  // A reservation is required to prevent frontrunning.
+  //
+  // Note that it is possible to bruteforce names being reserved but this should only be
+  // feasible for "high quality" names and the assumption I have is that these names
+  // will be highly contested anyway and would-be attackers would just mint them directly instead
+  // of attempting to frontrun. Random names that users may want to reserve aren't feasible
+  // to frontrun.
+  //
+  // Buyers MUST ensure the TLD is valid and naming rules are followed in the reserveration request hash.
+  // Otherwise a reserved resolver could be minted that is unclaimable and unrefundable.
   //
   //   Input                      |  Output               |  Data-Input
-  // -------------------------------------------------------------------
+  // --------------------------------------------------------------------
   // 0 Registry                   |  Registry             |
   // 1 ResolverReservation        |  ResolverReservation  |
   // 2 ReserveResolverRequest     |  ReservedResolver     |
