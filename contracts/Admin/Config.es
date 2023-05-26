@@ -50,9 +50,9 @@
   // validity
   val validUpdateTld = {
     val proof = getVar[Coll[Byte]](2).get
+
     val newTldVal = getVar[Coll[Byte]](1).get
     val newTldKey = blake2b256(newTldVal)
-
     val insertOps: Coll[(Coll[Byte], Coll[Byte])] = Coll((newTldKey, newTldVal))
 
     val actualState = cfgTldState.insert(insertOps, proof).get
@@ -62,13 +62,13 @@
   }
 
   val validSuccessor = successorBox.propositionBytes == SELF.propositionBytes &&
-    successorBox.tokens == SELF.tokens
+    successorBox.tokens(0)._1 == SELF.tokens(0)._1
 
   val isAdmin = adminInBox.tokens(0)._1 == adminNft
 
   // not strictly needed but prevent loss of admin box in case of badly formed txn
   val validAdminBox = adminInBox.propositionBytes == adminOutBox.propositionBytes &&
-    adminInBox.tokens == adminOutBox.tokens
+    adminInBox.tokens(0)._1 == adminOutBox.tokens(0)._1
 
   val validAction = if (action == ActionUpdateTld) {
     validUpdateTld
