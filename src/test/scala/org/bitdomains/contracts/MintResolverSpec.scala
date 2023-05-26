@@ -1,20 +1,20 @@
-package bitdomains
+package org.bitdomains.contracts
 
 import bitdomains.Constants.{mintResolverNft, mintResolverScript, registryScript, resolverScript}
+import io.getblok.getblok_plasma.ByteConversion.{convertsArrBytes, convertsString}
 import io.getblok.getblok_plasma.PlasmaParameters
 import io.getblok.getblok_plasma.collections.PlasmaMap
-import io.getblok.getblok_plasma.ByteConversion.{convertsArrBytes, convertsString}
+import org.ergoplatform.ErgoAddressEncoder
+import org.ergoplatform.appkit._
+import org.ergoplatform.wallet.secrets.ExtendedSecretKey
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should
-import org.ergoplatform.ErgoAddressEncoder
-import org.ergoplatform.appkit.{Address, BlockchainContext, ConstantsBuilder, ContextVar, ErgoClient, ErgoId, ErgoToken, ErgoValue, JavaHelpers, NetworkType, OutBox, OutBoxBuilder, RestApiErgoClient, SecretString, UnsignedTransactionBuilder}
-import org.ergoplatform.wallet.secrets.ExtendedSecretKey
-import sigmastate.AvlTreeFlags
 import scorex.crypto.hash.Blake2b256
+import scorex.utils.Random
+import sigmastate.AvlTreeFlags
 import sigmastate.eval.CostingSigmaDslBuilder.GroupElement
 import sigmastate.lang.exceptions.InterpreterException
 import special.sigma.GroupElement
-import scorex.utils.Random
 
 class MintResolverSpec extends AnyFlatSpec with should.Matchers {
   val ergoClient: ErgoClient = RestApiErgoClient.create("http://127.0.0.1:9052/", NetworkType.TESTNET, "", "")

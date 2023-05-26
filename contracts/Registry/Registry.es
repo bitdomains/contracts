@@ -3,20 +3,25 @@
   //
   // TRANSACTIONS
   //
-  // [1] New Registrar
-  // Creates a new TLD registrar for this registry thus allowing minting of resolvers for that TLD.
-  // An example of a TLD could be "erg" to allow for "myname.erg" names or similarly "ada" for "myname.ada"
-  // which would allow minting resolvers for Cardano addresses.
+  // [1] Mint Reserved Resolver
   //
-  // This is a privlidged operation performed by registry admins.
-  // TLDs have functional use - not cosmetic, so we don't want to allow arbitrary registrars.
-  // It only really makes sense to have registrars for Ergo + chains that have working bridges.
+  // Create a resolver (label ++ tld) reservation that can be later minted for a real resolver.
+  // A reservation is required to prevent frontrunning.
   //
-  //   Input         |  Output        |  Data-Input
-  // -----------------------------------------------
-  // 0 Registry      |  Registry      |
-  // 1 NewRegistrar  |  NewRegistrar  |
-  // 2 RegistryAdmin |  RegistryAdmin |
+  // Note that it is possible to bruteforce names being reserved but this should only be
+  // feasible for "high quality" names and the assumption I have is that these names
+  // will be highly contested anyway and would-be attackers would just mint them directly instead
+  // of attempting to frontrun. Random names that users may want to reserve aren't feasible
+  // to frontrun.
+  //
+  // Buyers MUST ensure the TLD is valid and naming rules are followed in the reserveration request hash.
+  // Otherwise a reserved resolver could be minted that is unclaimable and unrefundable.
+  //
+  //   Input                      |  Output               |  Data-Input
+  // --------------------------------------------------------------------
+  // 0 Registry                   |  Registry             |
+  // 1 ResolverReservation        |  ResolverReservation  |
+  // 2 ReserveResolverRequest     |  ReservedResolver     |
   //
   // [2] Mint Resolver
   // Creates a resolver box/nft that is used for address resolution.
@@ -34,8 +39,10 @@
   // 2 Commitment    |  Resolver      |
   //
   // REGISTERS
-  //  R4: (AvlTree) Registrars Avl tree.
-  //  R5: (AvlTree) Resolvers Avl tree.
+  //  R4: MUT (AvlTree) Resolvers AVL tree.
+  //  R5: MUT (AvlTree) Reservations AVL tree.
+  //
+  // Note: `MintResolver` requires access to the Resolvers & Reservations AVL trees, store state centrally in this contract.
 
   // indexes
   val selfIndex = 0
@@ -46,33 +53,33 @@
   val actionInBox = INPUTS(actionIndex)
 
   // nfts
-  val newRegistrarNft = fromBase16("$newRegistrarNft")
   val mintResolverNft = fromBase16("$mintResolverNft")
+  val resolverReservationNft = fromBase16("$resolverReservationNft")
 
   // registers
-  val inRegistrarsState = SELF.R4[AvlTree].get
-  val outRegistrarsState = successorOutBox.R4[AvlTree].get
-  val inResolversState = SELF.R5[AvlTree].get
-  val outResolversState = successorOutBox.R5[AvlTree].get
+  val inResolversState = SELF.R4[AvlTree].get
+  val outResolversState = successorOutBox.R4[AvlTree].get
+  val inReservationsState = SELF.R5[AvlTree].get
+  val outReservationsState = successorOutBox.R5[AvlTree].get
 
   // validity checks
-  val validNewRegistrar = actionInBox.tokens(0)._1 == newRegistrarNft
   val validMintResolver = actionInBox.tokens(0)._1 == mintResolverNft
-
-  // check registrars & resolver trees
-  val validRegistrars = if (!validNewRegistrar) {
-    inRegistrarsState.digest == outRegistrarsState.digest // ensure registrars are unchanged
-  } else true // NewRegistrar script will validate/update tree
+  val validResolverReservation = actionInBox.tokens(0)._1 == resolverReservationNft
 
   val validResolvers = if (!validMintResolver) {
     inResolversState.digest == outResolversState.digest // ensure resolvers are unchanged
   } else true // MintResolver script will validate/update tree
 
-  val validSuccessorBox = successorOutBox.propositionBytes == SELF.propositionBytes &&
-    validRegistrars &&
-    validResolvers
+  val validReservations = if (!validResolverReservation) {
+    inReservationsState.digest == outReservationsState.digest // ensure reservations are unchanged
+  } else true // ResolverReservation script will validate/update tree
 
-  val validAction = validNewRegistrar || validMintResolver
+  val validSuccessorBox = successorOutBox.propositionBytes == SELF.propositionBytes &&
+    SELF.tokens == successorOutBox.tokens &&
+    validResolvers &&
+    validReservations
+
+  val validAction = validMintResolver || validResolverReservation
 
   sigmaProp(validSuccessorBox && validAction)
 }
