@@ -80,7 +80,7 @@
   val validFundsPaid = true
 
   val validSuccessorBox = successorOutBox.propositionBytes == SELF.propositionBytes && // script preserved
-    successorOutBox.tokens == SELF.tokens // nft preserved
+    successorOutBox.tokens(0) == SELF.tokens(0) // nft preserved
 
   sigmaProp(
     validRegistryInBox &&

@@ -15,6 +15,7 @@ case class ReservedResolverBoxBuilder(implicit ctx: BlockchainContext)
 
   private var buyerPk: GroupElement = GroupElement(walletSk.publicImage.value)
 
+  // sigmaProp(true)
   private var resolveAddress: String = "4MQyML64GnzMxZgm"
 
   def withHashedReservation(hash: Array[Byte]): this.type = {

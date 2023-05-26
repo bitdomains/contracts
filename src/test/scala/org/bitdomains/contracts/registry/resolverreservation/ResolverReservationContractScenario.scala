@@ -5,28 +5,31 @@ import org.bitdomains.contracts.{
   bytesToHex,
   defaultRegistryMap,
   fakeIndex,
+  fakeTxId1,
   fakeTxId3
 }
 import org.bitdomains.contracts.registry.RegistryBoxBuilder
 import org.bitdomains.contracts.reservedresolver.ReservedResolverBoxBuilder
 import org.bitdomains.contracts.utils.scenarios.ContractScenario
 import org.bitdomains.contracts.reserveresolverrequest.ReserveResolverRequestBoxBuilder
-import org.ergoplatform.appkit.{BlockchainContext, ContextVar, InputBox, OutBox}
+import org.ergoplatform.appkit.{
+  BlockchainContext,
+  ContextVar,
+  ErgoToken,
+  InputBox,
+  OutBox
+}
 import scorex.crypto.hash.Blake2b256
 
 case class ResolverReservationContractScenario(
-    label: String = "myname",
+    requestLabel: String = "myname",
     tld: String = "erg",
     resolversMap: RegistryState = defaultRegistryMap,
     reservationsMap: RegistryState = defaultRegistryMap
 )(implicit
     ctx: BlockchainContext
 ) extends ContractScenario[ResolverReservationTransactionBuilder] {
-  def expectedReservedResolverNft: String = {
-    registryIn.getId.toString
-  }
-
-  val hashedResolver: Array[Byte] = Blake2b256(label ++ tld)
+  val hashedResolver: Array[Byte] = Blake2b256(requestLabel ++ tld)
 
   val registrarsMap: RegistryState = {
     val map = defaultRegistryMap
@@ -34,57 +37,78 @@ case class ResolverReservationContractScenario(
     map
   }
 
-  var registryIn: InputBox =
+  var registryIn: RegistryBoxBuilder =
     RegistryBoxBuilder()
       .withValue(200000000000000000L)
       .withReservationsMap(reservationsMap)
-      .build()
-      .convertToInputWith(fakeTxId3, fakeIndex)
+  var resolverReservationInVars: Seq[ContextVar] = Seq()
 
-  var registryOut: OutBox =
+  var registryOut: RegistryBoxBuilder =
     RegistryBoxBuilder()
-      .build()
 
-  var resolverReservationIn: InputBox = ResolverReservationBoxBuilder()
-    .build()
-    .convertToInputWith(fakeTxId3, fakeIndex)
+  var resolverReservationIn: ResolverReservationBoxBuilder =
+    ResolverReservationBoxBuilder()
 
-  var resolverReservationOut: OutBox = ResolverReservationBoxBuilder().build()
+  var resolverReservationOut: ResolverReservationBoxBuilder =
+    ResolverReservationBoxBuilder()
 
-  var reserveResolverRequestIn: InputBox =
+  var reserveResolverRequestIn: ReserveResolverRequestBoxBuilder =
     ReserveResolverRequestBoxBuilder()
       .withHashedReservation(hashedResolver)
-      .build()
-      .convertToInputWith(fakeTxId3, fakeIndex)
 
-  var reservedResolverOut: OutBox =
-    ReservedResolverBoxBuilder().withNftId(expectedReservedResolverNft).build()
+  var reservedResolverOut: ReservedResolverBoxBuilder =
+    ReservedResolverBoxBuilder()
+  // optional nft override, defaults to expected nft (registryBox.id)
+  var reservedResolverOutNftOverride: Option[String] = None
+  var reservedResolverOutNftAmount: Int = 1
 
   def doAvlOps(
       hashedResolver: Array[Byte] = this.hashedResolver,
-      insertedResolverNft: String = this.expectedReservedResolverNft
+      insertedResolverNft: String = ""
   ): Unit = {
     val lookupOp = resolversMap.lookUp(hashedResolver)
     val insertOp = reservationsMap.insert(
       (hashedResolver, insertedResolverNft)
     )
 
-    resolverReservationIn = resolverReservationIn.withContextVars(
+    resolverReservationInVars = resolverReservationInVars ++ Seq(
       new ContextVar(0.toByte, lookupOp.proof.ergoValue),
       new ContextVar(1.toByte, insertOp.proof.ergoValue)
     )
-    registryOut = RegistryBoxBuilder()
-      .withReservationsMap(reservationsMap)
-      .build()
   }
 
   override def txBuilder: ResolverReservationTransactionBuilder = {
+    val registryInBox =
+      registryIn
+        .withReservationsMap(reservationsMap)
+        .build()
+        .convertToInputWith(fakeTxId3, fakeIndex)
+
+    doAvlOps(insertedResolverNft = registryInBox.getId.toString)
+
+    registryOut = registryOut.withReservationsMap(reservationsMap)
+    val outNftId =
+      reservedResolverOutNftOverride.getOrElse(registryInBox.getId.toString)
+    reservedResolverOut = reservedResolverOut.withNftId(
+      outNftId,
+      reservedResolverOutNftAmount
+    )
+
+    val resolverReservationInBox = resolverReservationIn
+      .build()
+      .convertToInputWith(fakeTxId1, fakeIndex)
+      .withContextVars(resolverReservationInVars: _*)
+
     ResolverReservationTransactionBuilder()
-      .withRegistryIn(registryIn)
-      .withRegistryOut(registryOut)
-      .withResolverReservationIn(resolverReservationIn)
-      .withResolverReservationOut(resolverReservationOut)
-      .withReserveResolverRequestIn(reserveResolverRequestIn)
-      .withReservedResolverOut(reservedResolverOut)
+      .withRegistryIn(registryInBox)
+      .withRegistryOut(registryOut.build())
+      .withResolverReservationIn(resolverReservationInBox)
+      .withResolverReservationOut(resolverReservationOut.build())
+      .withReserveResolverRequestIn(
+        reserveResolverRequestIn
+          .build()
+          .convertToInputWith(fakeTxId1, fakeIndex)
+      )
+      .withReservedResolverOut(reservedResolverOut.build())
   }
 }

@@ -12,7 +12,7 @@ import org.scalatest.matchers.should
 import sigmastate.lang.exceptions.InterpreterException
 
 class ConfigSpec extends AnyFlatSpec with should.Matchers {
-  "Config" should "update tld state config" in {
+  it should "update tld state config" in {
     ergoClient.execute(implicit ctx => {
       val scenario = ConfigContractScenario()
 
@@ -22,7 +22,7 @@ class ConfigSpec extends AnyFlatSpec with should.Matchers {
     })
   }
 
-  "Config" should "fail if admin box input not present" in {
+  "isAdmin" should "fail if admin box input not present" in {
     ergoClient.execute(implicit ctx => {
       val scenario = ConfigContractScenario()
 
@@ -39,7 +39,7 @@ class ConfigSpec extends AnyFlatSpec with should.Matchers {
     })
   }
 
-  "Config" should "fail if admin nft not valid" in {
+  "isAdmin" should "fail if admin nft not valid" in {
     ergoClient.execute(implicit ctx => {
       val scenario = ConfigContractScenario()
 
@@ -64,7 +64,7 @@ class ConfigSpec extends AnyFlatSpec with should.Matchers {
     })
   }
 
-  "Config" should "fail if successor propositionBytes changed" in {
+  "validSuccessor" should "fail if successor propositionBytes changed" in {
     ergoClient.execute(implicit ctx => {
       val scenario = ConfigContractScenario()
 
