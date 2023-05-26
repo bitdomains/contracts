@@ -5,6 +5,7 @@ import org.ergoplatform.ErgoAddressEncoder.TestnetNetworkPrefix
 import scorex.crypto.hash.{Blake2b256, Digest32}
 
 object Constants {
+  val contractsVersion = 1
   val network: ErgoAddressEncoder.NetworkPrefix = TestnetNetworkPrefix
 
   // Registry action nfts
@@ -40,7 +41,7 @@ object Constants {
   private def readContract(path: String, subs: Map[String, String]) = {
     substitute(
       scala.io.Source
-        .fromFile("contracts/" + path, "utf-8")
+        .fromFile(s"contracts/v$contractsVersion/" + path, "utf-8")
         .getLines
         .mkString("\n"),
       subs
