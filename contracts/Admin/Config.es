@@ -68,7 +68,7 @@
 
   // not strictly needed but prevent loss of admin box in case of badly formed txn
   val validAdminBox = adminInBox.propositionBytes == adminOutBox.propositionBytes &&
-    adminInBox.tokens(0)._1 == adminOutBox.tokens(0)._1
+    adminInBox.tokens(0) == adminOutBox.tokens(0)
 
   val validAction = if (action == ActionUpdateTld) {
     validUpdateTld

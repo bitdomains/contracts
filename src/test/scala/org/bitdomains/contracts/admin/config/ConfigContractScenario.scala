@@ -1,9 +1,9 @@
 package org.bitdomains.contracts.admin.config
 
 import org.bitdomains.contracts._
+import org.bitdomains.contracts.admin.AdminBoxBuilder
 import org.bitdomains.contracts.utils.scenarios.ContractScenario
 import org.ergoplatform.appkit.{BlockchainContext, ContextVar, ErgoValue}
-import org.bitdomains.contracts.registry.RegistryAdminBoxBuilder
 import scorex.crypto.hash.Blake2b256
 
 sealed trait ConfigAction {
@@ -33,9 +33,9 @@ case class ConfigContractScenario(implicit
     ConfigBoxBuilder()
       .withTldState(tldState)
 
-  var adminIn: RegistryAdminBoxBuilder = RegistryAdminBoxBuilder()
+  var adminIn: AdminBoxBuilder = AdminBoxBuilder()
 
-  var adminOut: RegistryAdminBoxBuilder = RegistryAdminBoxBuilder()
+  var adminOut: AdminBoxBuilder = AdminBoxBuilder()
 
   def updateTldAction(
       tld: String = insertTld
