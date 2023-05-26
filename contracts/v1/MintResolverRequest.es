@@ -29,8 +29,6 @@
   //                        For example if TLD is "erg" an Ergo address, if TLD is "ada" a Cardano address.
   //
 
-  // TODO: reservedresolver should contain the buyers address so this can't be meaningfully frontrun with a malicious address
-
   // indexes
   val registryIndex = 0
   val mintResolverIndex = 1

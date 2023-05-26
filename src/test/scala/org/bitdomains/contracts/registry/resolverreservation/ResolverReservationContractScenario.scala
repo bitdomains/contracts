@@ -1,24 +1,11 @@
 package org.bitdomains.contracts.registry.resolverreservation
 
-import org.bitdomains.contracts.{
-  RegistryState,
-  bytesToHex,
-  defaultRegistryMap,
-  fakeIndex,
-  fakeTxId1,
-  fakeTxId3
-}
 import org.bitdomains.contracts.registry.RegistryBoxBuilder
 import org.bitdomains.contracts.reservedresolver.ReservedResolverBoxBuilder
-import org.bitdomains.contracts.utils.scenarios.ContractScenario
 import org.bitdomains.contracts.reserveresolverrequest.ReserveResolverRequestBoxBuilder
-import org.ergoplatform.appkit.{
-  BlockchainContext,
-  ContextVar,
-  ErgoToken,
-  InputBox,
-  OutBox
-}
+import org.bitdomains.contracts.utils.scenarios.ContractScenario
+import org.bitdomains.contracts._
+import org.ergoplatform.appkit.{BlockchainContext, ContextVar}
 import scorex.crypto.hash.Blake2b256
 
 case class ResolverReservationContractScenario(
@@ -30,12 +17,6 @@ case class ResolverReservationContractScenario(
     ctx: BlockchainContext
 ) extends ContractScenario[ResolverReservationTransactionBuilder] {
   val hashedResolver: Array[Byte] = Blake2b256(requestLabel ++ tld)
-
-  val registrarsMap: RegistryState = {
-    val map = defaultRegistryMap
-    map.insert((Blake2b256(tld), bytesToHex(tld.getBytes)))
-    map
-  }
 
   var registryIn: RegistryBoxBuilder =
     RegistryBoxBuilder()
