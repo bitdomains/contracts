@@ -1,22 +1,29 @@
 package org.bitdomains.contracts.admin.config
 
-import org.bitdomains.contracts.{defaultScript, ergoClient, randomErgoId}
+import org.bitdomains.contracts.{
+  WithBlockchainContext,
+  defaultScript,
+  randomErgoId
+}
 import org.ergoplatform.appkit.ErgoToken
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should
 import sigmastate.lang.exceptions.InterpreterException
 
-class ConfigSpec extends AnyFlatSpec with should.Matchers {
+class ConfigSpec
+    extends AnyFlatSpec
+    with should.Matchers
+    with WithBlockchainContext {
   it should "update tld state config" in {
-    ergoClient.execute(implicit ctx => {
+    withBlockchain { implicit ctx =>
       val scenario = ConfigContractScenario()
 
       noException should be thrownBy scenario.mkAndSignTx()
-    })
+    }
   }
 
   "isAdmin" should "fail with invalid admin box" in {
-    ergoClient.execute(implicit ctx => {
+    withBlockchain { implicit ctx =>
       val scenario = ConfigContractScenario()
 
       scenario.adminIn.withNftId(
@@ -30,11 +37,11 @@ class ConfigSpec extends AnyFlatSpec with should.Matchers {
         .mkAndSignTx()).getMessage should be(
         "Script reduced to false"
       )
-    })
+    }
   }
 
   "validSuccessor" should "fail if propositionBytes changed" in {
-    ergoClient.execute(implicit ctx => {
+    withBlockchain { implicit ctx =>
       val scenario = ConfigContractScenario()
 
       scenario.configOut = scenario.configOut.withScript(defaultScript)
@@ -43,11 +50,11 @@ class ConfigSpec extends AnyFlatSpec with should.Matchers {
         .mkAndSignTx()).getMessage should be(
         "Script reduced to false"
       )
-    })
+    }
   }
 
   "validSuccessor" should "fail if nft changed" in {
-    ergoClient.execute(implicit ctx => {
+    withBlockchain { implicit ctx =>
       val scenario = ConfigContractScenario()
 
       val extraNftId = randomErgoId
@@ -60,6 +67,6 @@ class ConfigSpec extends AnyFlatSpec with should.Matchers {
         .mkAndSignTx()).getMessage should be(
         "Script reduced to false"
       )
-    })
+    }
   }
 }

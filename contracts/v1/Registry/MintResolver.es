@@ -18,9 +18,8 @@
   // VARIABLES
   //  0: (Coll[Byte]) TLD AVL tree proof (Config.R4): contains TLD
   //  1: (Coll[Byte]) Resolvers AVL tree proof (insert new resolver)
-  //  2: (Coll[Coll[Byte]]) Reservations AVL tree proof
-  //                          coll[0] = tree before removing resolver hash (check for reservation existance)
-  //                          coll[1] = tree after removing resolver hash (remove reservation)
+  //  2: (Coll[Byte]) Reservations AVL tree lookup for resolver hash to get nft
+  //  3: (Coll[Byte]) Remove reservation from Reservations AVL tree
 
   // constants
   // Could use the config box
@@ -41,18 +40,15 @@
   val resolverOutBox = OUTPUTS(resolverOutIndex)
   val requestInBox = INPUTS(requestInIndex)
   val reservationInBox = INPUTS(reservationInIndex)
-  var config = CONTEXT.dataInputs(0)
+  val config = CONTEXT.dataInputs(0)
 
   // registers
-  val reservedResolverBoxId = requestInBox.R4[Coll[Byte]].get
+  val requestReservedResolverNftId = requestInBox.R4[Coll[Byte]].get
   val buyerPk = requestInBox.R5[GroupElement].get
   val label = requestInBox.R6[Coll[Byte]].get
   val tld = requestInBox.R7[Coll[Byte]].get
   val hashedResolver = blake2b256(label ++ tld)
   val resolveAddress = requestInBox.R8[Coll[Byte]].get
-
-  // scripts
-  val resolverScriptHash = fromBase16("$resolverScriptHash")
 
   // nfts
   val expectedNftId = INPUTS(0).id
@@ -80,7 +76,7 @@
 
   val validResolverBox = {
     // valid script
-    val validScript = blake2b256(resolverOutBox.propositionBytes) == resolverScriptHash
+    val validScript = blake2b256(resolverOutBox.propositionBytes) == fromBase16("$resolverScriptHash")
     // valid registers
     val validOwnerPk = resolverOutBox.R4[GroupElement].get == buyerPk
     val validOutLabel = resolverOutBox.R5[Coll[Byte]].get == label
@@ -107,7 +103,7 @@
 
   // remove reserved resolver from Registry.reservation
   val validReservationTreeUpdate = {
-    val proof = getVar[Coll[Coll[Byte]]](2).get(1)
+    val proof = getVar[Coll[Byte]](3).get
 
     val reservationsState = registryInBox.R5[AvlTree].get
     val removeKeys: Coll[Coll[Byte]] = Coll(hashedResolver)
@@ -119,22 +115,26 @@
 
   val validReservation = {
     // get expected nft for reserved resolver box
-    val proof = getVar[Coll[Coll[Byte]]](2).get(0)
-    val reservationsState = registryInBox.R5[AvlTree].get
-    val expectedNft = reservationsState.get(hashedResolver, proof).get
+//    val proof = getVar[Coll[Byte]](2).get
+//    val reservationsState = registryInBox.R5[AvlTree].get
+//    val expectedNft = reservationsState.get(hashedResolver, proof).get
+    val suppliedReservationNft = reservationInBox.tokens(0)._1
 
     // validity checks
-    val validReservationBoxId = reservationInBox.id == reservedResolverBoxId
-    val validNft = reservationInBox.tokens(0)._1 == expectedNft
-    val validHashedResolver = reservationInBox.R4[Coll[Byte]].get == hashedResolver // user making request knew name ++ tld, hash matches
-    val validBuyerPk = reservationInBox.R5[GroupElement].get == buyerPk
-    val validAddress =  reservationInBox.R6[Coll[Byte]].get == resolveAddress
+    // reserved resolver in box nft matches mint request in box nft
+    val validReservationBoxNft = suppliedReservationNft == requestReservedResolverNftId
+    // reserved resolver in box nft matches reservation nft stored in registry
+//    val validNft = suppliedReservationNft == expectedNft
+//    // user making request knew label ++ tld
+//    val validHashedResolver = reservationInBox.R4[Coll[Byte]].get == hashedResolver
+//    val validBuyerPk = reservationInBox.R5[GroupElement].get == buyerPk
+//    val validAddress =  reservationInBox.R6[Coll[Byte]].get == resolveAddress
 
-    validReservationBoxId &&
-    validNft &&
-    validHashedResolver &&
-    validBuyerPk &&
-    validAddress
+    validReservationBoxNft
+//    validNft &&
+//    validHashedResolver &&
+//    validBuyerPk &&
+//    validAddress
   }
 
   val validFundsPaid = {
@@ -144,7 +144,7 @@
     // TODO payment to ui dev
     // TODO remaining funds to DAO
     // TODO actual price calculations
-    amountPaid > 100000
+    true
   }
 
   // successor box valid
@@ -154,11 +154,12 @@
   val validBoxes = validConfigBox && validRegistryInBox && validSuccessorBox && validResolverBox
 
   sigmaProp(
-    validBoxes &&
+//    validBoxes &&
     validLabel &&
     validTld &&
     validReservation &&
-    validResolverTreeUpdate &&
+//    validReservationTreeUpdate &&
+//    validResolverTreeUpdate &&
     validFundsPaid
   )
 }

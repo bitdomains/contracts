@@ -1,6 +1,6 @@
 package org.bitdomains.contracts.registry.resolverreservation
 
-import org.bitdomains.contracts.{ergoClient, randomErgoId}
+import org.bitdomains.contracts.{WithBlockchainContext, randomErgoId}
 import org.ergoplatform.appkit.{ErgoToken, JavaHelpers, SecretString}
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should
@@ -8,17 +8,20 @@ import scorex.crypto.hash.Blake2b256
 import sigmastate.eval.CostingSigmaDslBuilder.GroupElement
 import sigmastate.lang.exceptions.InterpreterException
 
-class ResolverReservationSpec extends AnyFlatSpec with should.Matchers {
+class ResolverReservationSpec
+    extends AnyFlatSpec
+    with should.Matchers
+    with WithBlockchainContext {
   it should "mint ReservedResolver box" in {
-    ergoClient.execute(implicit ctx => {
+    withBlockchain { implicit ctx =>
       val scenario = ResolverReservationContractScenario()
 
       noException should be thrownBy scenario.mkAndSignTx()
-    })
+    }
   }
 
   "validRegistryInBox" should "fail with invalid registry box" in {
-    ergoClient.execute(implicit ctx => {
+    withBlockchain { implicit ctx =>
       val scenario = ResolverReservationContractScenario()
 
       scenario.registryIn.withNftId(
@@ -32,11 +35,11 @@ class ResolverReservationSpec extends AnyFlatSpec with should.Matchers {
         .mkAndSignTx()).getMessage should be(
         "Script reduced to false"
       )
-    })
+    }
   }
 
   "validReservedResolverBox" should "fail if `hashedResolver` mismatch" in {
-    ergoClient.execute(implicit ctx => {
+    withBlockchain { implicit ctx =>
       val scenario =
         ResolverReservationContractScenario(requestLabel = "requestname")
 
@@ -48,11 +51,11 @@ class ResolverReservationSpec extends AnyFlatSpec with should.Matchers {
         .mkAndSignTx()).getMessage should be(
         "Script reduced to false"
       )
-    })
+    }
   }
 
   "validReservedResolverBox" should "fail if `resolveAddress` mismatch" in {
-    ergoClient.execute(implicit ctx => {
+    withBlockchain { implicit ctx =>
       val scenario = ResolverReservationContractScenario()
 
       // sigmaProp(false)
@@ -62,11 +65,11 @@ class ResolverReservationSpec extends AnyFlatSpec with should.Matchers {
         .mkAndSignTx()).getMessage should be(
         "Script reduced to false"
       )
-    })
+    }
   }
 
   "validReservedResolverBox" should "fail if `buyerPk` mismatch" in {
-    ergoClient.execute(implicit ctx => {
+    withBlockchain { implicit ctx =>
       val scenario = ResolverReservationContractScenario()
 
       val mnemonic = SecretString.create("different mnemonic for different key")
@@ -83,11 +86,11 @@ class ResolverReservationSpec extends AnyFlatSpec with should.Matchers {
         .mkAndSignTx()).getMessage should be(
         "Script reduced to false"
       )
-    })
+    }
   }
 
   "validReservedResolverBox" should "fail if `nft` mismatch" in {
-    ergoClient.execute(implicit ctx => {
+    withBlockchain { implicit ctx =>
       val scenario = ResolverReservationContractScenario()
 
       val extraNftId = randomErgoId
@@ -100,11 +103,11 @@ class ResolverReservationSpec extends AnyFlatSpec with should.Matchers {
         .mkAndSignTx()).getMessage should be(
         "Script reduced to false"
       )
-    })
+    }
   }
 
   "validReservedResolverBox" should "fail if `nft` amount != 1" in {
-    ergoClient.execute(implicit ctx => {
+    withBlockchain { implicit ctx =>
       val scenario = ResolverReservationContractScenario()
 
       scenario.reservedResolverOutNftAmount = 2
@@ -113,6 +116,6 @@ class ResolverReservationSpec extends AnyFlatSpec with should.Matchers {
         .mkAndSignTx()).getMessage should be(
         "Script reduced to false"
       )
-    })
+    }
   }
 }

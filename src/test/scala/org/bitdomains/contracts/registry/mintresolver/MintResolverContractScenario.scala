@@ -8,7 +8,8 @@ import org.bitdomains.contracts.{
   defaultRegistryMap,
   fakeIndex,
   fakeTxId1,
-  fakeTxId3
+  fakeTxId3,
+  randomErgoId
 }
 import org.bitdomains.contracts.registry.RegistryBoxBuilder
 import org.bitdomains.contracts.reservedresolver.ReservedResolverBoxBuilder
@@ -20,14 +21,26 @@ import scorex.crypto.hash.Blake2b256
 case class MintResolverContractScenario(implicit
     ctx: BlockchainContext
 ) extends ContractScenario[MintResolverTransactionBuilder] {
-  var registrarsMap: RegistryState = {
-    val defaultTld = "erg"
+  val existingTld = "erg"
+  val existingReservedLabel = "myname"
+  val existingReservationNft = randomErgoId
+
+  val mintLabel = existingReservedLabel
+  val mintTld = existingTld
+
+  var tldState: RegistryState = {
     val map = defaultRegistryMap
-    map.insert((Blake2b256(defaultTld), bytesToHex(defaultTld.getBytes)))
+    map.insert((Blake2b256(existingTld), bytesToHex(existingTld.getBytes)))
+    map
+  }
+  var reservationsMap: RegistryState = {
+    val map = defaultRegistryMap
+    map.insert(
+      (Blake2b256(existingReservedLabel ++ existingTld), existingReservationNft)
+    )
     map
   }
   var resolversMap: RegistryState = defaultRegistryMap
-  var reservationsMap: RegistryState = defaultRegistryMap
 
   var registryIn: RegistryBoxBuilder =
     RegistryBoxBuilder()
@@ -44,13 +57,27 @@ case class MintResolverContractScenario(implicit
 
   var mintResolverRequestIn: MintResolverRequestBoxBuilder =
     MintResolverRequestBoxBuilder()
+      .withTld(existingTld)
+      .withLabel(existingReservedLabel)
 
   var reservedResolverIn: ReservedResolverBoxBuilder =
     ReservedResolverBoxBuilder()
 
   var resolverOut: ResolverBoxBuilder = ResolverBoxBuilder()
+    .withTld(existingTld)
+    .withLabel(existingReservedLabel)
 
   var configDataIn: ConfigBoxBuilder = ConfigBoxBuilder()
+
+  def avlOps(): Unit = {
+    val tldLookup = tldState.lookUp(Blake2b256(mintTld))
+    val reservationGet = tldState.lookUp(Blake2b256(mintLabel ++ mintTld))
+
+    mintResolverContextVars = mintResolverContextVars ++ Seq(
+      new ContextVar(0.toByte, tldLookup.proof.ergoValue),
+      new ContextVar(2.toByte, reservationGet.proof.ergoValue)
+    )
+  }
 
   override def txBuilder: MintResolverTransactionBuilder = {
     val registryInBox =
@@ -59,7 +86,7 @@ case class MintResolverContractScenario(implicit
         .build()
         .convertToInputWith(fakeTxId3, fakeIndex)
 
-    // probably avl ops here
+    avlOps()
 
     val registryOutBox = registryOut
       .withReservationsMap(reservationsMap)
@@ -74,27 +101,36 @@ case class MintResolverContractScenario(implicit
     val mintResolverOutBox = mintResolverOut.build()
 
     val mintResolverRequestInBox =
-      mintResolverRequestIn.build().convertToInputWith(fakeTxId1, fakeIndex)
+      mintResolverRequestIn
+        .withReservedResolverNftId(existingReservationNft)
+        .build()
+        .convertToInputWith(fakeTxId1, fakeIndex)
 
     val reservedResolverInBox =
-      reservedResolverIn.build().convertToInputWith(fakeTxId1, fakeIndex)
+      reservedResolverIn
+        .withNftId(existingReservationNft)
+        .build()
+        .convertToInputWith(fakeTxId1, fakeIndex)
 
     val resolverOutBox = resolverOut.build()
 
     val configDataInBox =
       configDataIn
-        .withTldState(registrarsMap)
+        .withTldState(tldState)
         .build()
         .convertToInputWith(fakeTxId1, fakeIndex)
 
     MintResolverTransactionBuilder()
+      // inputs
       .withRegistryIn(registryInBox)
       .withMintResolverIn(mintResolverInBox)
       .withMintResolverRequestIn(mintResolverRequestInBox)
       .withReservedResolverIn(reservedResolverInBox)
+      // outputs
       .withRegistryOut(registryOutBox)
       .withMintResolverOut(mintResolverOutBox)
       .withResolverOut(resolverOutBox)
+      // data inputs
       .withConfigDataIn(configDataInBox)
   }
 }

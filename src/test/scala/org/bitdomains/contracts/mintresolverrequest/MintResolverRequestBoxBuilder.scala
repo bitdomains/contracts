@@ -9,7 +9,7 @@ import special.sigma.GroupElement
 
 case class MintResolverRequestBoxBuilder(implicit ctx: BlockchainContext)
     extends BoxBuilder(mintResolverRequestScript) {
-  private var reservedResolverBoxId: String = ""
+  private var reservedResolverNftId: String = ""
 
   private var buyerPk: GroupElement = GroupElement(walletSk.publicImage.value)
 
@@ -19,8 +19,8 @@ case class MintResolverRequestBoxBuilder(implicit ctx: BlockchainContext)
 
   private var resolveAddress: String = "4MQyML64GnzMxZgm"
 
-  def withReservedResolverBoxId(v: String): this.type = {
-    this.reservedResolverBoxId = v
+  def withReservedResolverNftId(v: String): this.type = {
+    this.reservedResolverNftId = v
     this
   }
 
@@ -48,7 +48,7 @@ case class MintResolverRequestBoxBuilder(implicit ctx: BlockchainContext)
     this
       .partialBuild()
       .registers(
-        ErgoValue.of(reservedResolverBoxId.getBytes),
+        ErgoValue.of(reservedResolverNftId.getBytes),
         ErgoValue.of(buyerPk),
         ErgoValue.of(label.getBytes),
         ErgoValue.of(tld.getBytes),

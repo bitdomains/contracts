@@ -38,7 +38,7 @@ package object contracts {
     bytes.map("%02x".format(_)).mkString
   }
 
-  def ergoClient: ErgoClient = {
+  val ergoClient: ErgoClient = {
     RestApiErgoClient.create(
       "https://ergo-node-testnet-weu.zoomout.io",
       NetworkType.TESTNET,

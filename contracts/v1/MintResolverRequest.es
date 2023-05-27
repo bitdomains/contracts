@@ -20,14 +20,14 @@
   // contained in R5. I.e sign the transaction using the associated SK.
   //
   // REGISTERS
-  //  R4: (Coll[Byte])    Reserved resolver box id.
+  //  R4: (Coll[Byte])    Reserved resolver box nft id. Provided so off-chain bots can find the reservation box
+  //                        required for `Registry.MintResolver` txns.
   //  R5: (GroupElement)  PK of the buyer, transaction must be signed with the associated SK to ensure
   //                        the buyer can spend/use the Resolver.
   //  R6: (Coll[Byte])    Label (name) that is used to resolve an address.
   //  R7: (Coll[Byte])    Registrar/TLD, "erg" for example.
   //  R8: (Coll[Byte])    Address to resolve to, this should be set based on the TLD.
   //                        For example if TLD is "erg" an Ergo address, if TLD is "ada" a Cardano address.
-  //
 
   // indexes
   val registryIndex = 0
