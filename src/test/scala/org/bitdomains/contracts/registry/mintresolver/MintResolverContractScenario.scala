@@ -28,6 +28,8 @@ case class MintResolverContractScenario(implicit
   val mintLabel = existingReservedLabel
   val mintTld = existingTld
 
+  var newResolverNft = ""
+
   var tldState: RegistryState = {
     val map = defaultRegistryMap
     map.insert((Blake2b256(existingTld), bytesToHex(existingTld.getBytes)))
@@ -57,8 +59,8 @@ case class MintResolverContractScenario(implicit
 
   var mintResolverRequestIn: MintResolverRequestBoxBuilder =
     MintResolverRequestBoxBuilder()
-      .withTld(existingTld)
-      .withLabel(existingReservedLabel)
+      .withTld(mintTld)
+      .withLabel(mintLabel)
 
   var reservedResolverIn: ReservedResolverBoxBuilder =
     ReservedResolverBoxBuilder()
@@ -71,11 +73,16 @@ case class MintResolverContractScenario(implicit
 
   def avlOps(): Unit = {
     val tldLookup = tldState.lookUp(Blake2b256(mintTld))
-    val reservationGet = tldState.lookUp(Blake2b256(mintLabel ++ mintTld))
+    val keyHash = Blake2b256(mintLabel ++ mintTld)
+    val reservationRemove =
+      reservationsMap.delete(keyHash)
+    val resolversInsert = resolversMap.insert((keyHash, newResolverNft))
 
     mintResolverContextVars = mintResolverContextVars ++ Seq(
       new ContextVar(0.toByte, tldLookup.proof.ergoValue),
-      new ContextVar(2.toByte, reservationGet.proof.ergoValue)
+      new ContextVar(1.toByte, resolversInsert.proof.ergoValue),
+      // this proof is also used for a AvlTree.get call in contract
+      new ContextVar(2.toByte, reservationRemove.proof.ergoValue)
     )
   }
 
@@ -85,18 +92,19 @@ case class MintResolverContractScenario(implicit
         .withReservationsMap(reservationsMap)
         .build()
         .convertToInputWith(fakeTxId3, fakeIndex)
+    newResolverNft = registryInBox.getId.toString
 
     avlOps()
-
-    val registryOutBox = registryOut
-      .withReservationsMap(reservationsMap)
-      .withResolversMap(resolversMap)
-      .build()
 
     val mintResolverInBox = mintResolverIn
       .build()
       .convertToInputWith(fakeTxId1, fakeIndex)
       .withContextVars(mintResolverContextVars: _*)
+
+    val registryOutBox = registryOut
+      .withReservationsMap(reservationsMap)
+      .withResolversMap(resolversMap)
+      .build()
 
     val mintResolverOutBox = mintResolverOut.build()
 
@@ -112,7 +120,7 @@ case class MintResolverContractScenario(implicit
         .build()
         .convertToInputWith(fakeTxId1, fakeIndex)
 
-    val resolverOutBox = resolverOut.build()
+    val resolverOutBox = resolverOut.withNftId(newResolverNft).build()
 
     val configDataInBox =
       configDataIn

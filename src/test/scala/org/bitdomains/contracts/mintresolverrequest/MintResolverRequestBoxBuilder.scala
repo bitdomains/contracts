@@ -2,7 +2,7 @@ package org.bitdomains.contracts.mintresolverrequest
 
 import bitdomains.Constants.mintResolverRequestScript
 import org.bitdomains.contracts.utils.builders.BoxBuilder
-import org.bitdomains.contracts.walletSk
+import org.bitdomains.contracts.{hexToBytes, walletSk}
 import org.ergoplatform.appkit.{BlockchainContext, ErgoValue, OutBox}
 import sigmastate.eval.CostingSigmaDslBuilder.GroupElement
 import special.sigma.GroupElement
@@ -48,7 +48,7 @@ case class MintResolverRequestBoxBuilder(implicit ctx: BlockchainContext)
     this
       .partialBuild()
       .registers(
-        ErgoValue.of(reservedResolverNftId.getBytes),
+        ErgoValue.of(hexToBytes(reservedResolverNftId)),
         ErgoValue.of(buyerPk),
         ErgoValue.of(label.getBytes),
         ErgoValue.of(tld.getBytes),

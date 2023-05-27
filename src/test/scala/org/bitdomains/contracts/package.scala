@@ -38,6 +38,10 @@ package object contracts {
     bytes.map("%02x".format(_)).mkString
   }
 
+  def hexToBytes(hexString: String): Array[Byte] = {
+    hexString.sliding(2, 2).toArray.map(Integer.parseInt(_, 16).toByte)
+  }
+
   val ergoClient: ErgoClient = {
     RestApiErgoClient.create(
       "https://ergo-node-testnet-weu.zoomout.io",

@@ -18,8 +18,8 @@
   // VARIABLES
   //  0: (Coll[Byte]) TLD AVL tree proof (Config.R4): contains TLD
   //  1: (Coll[Byte]) Resolvers AVL tree proof (insert new resolver)
-  //  2: (Coll[Byte]) Reservations AVL tree lookup for resolver hash to get nft
-  //  3: (Coll[Byte]) Remove reservation from Reservations AVL tree
+  //  2: (Coll[Byte]) Reservations AVL tree lookup for resolver hash to get nft & remove reservation hash
+  //                    from Reservations AVL tree
 
   // constants
   // Could use the config box
@@ -103,7 +103,7 @@
 
   // remove reserved resolver from Registry.reservation
   val validReservationTreeUpdate = {
-    val proof = getVar[Coll[Byte]](3).get
+    val proof = getVar[Coll[Byte]](2).get
 
     val reservationsState = registryInBox.R5[AvlTree].get
     val removeKeys: Coll[Coll[Byte]] = Coll(hashedResolver)
@@ -115,26 +115,26 @@
 
   val validReservation = {
     // get expected nft for reserved resolver box
-//    val proof = getVar[Coll[Byte]](2).get
-//    val reservationsState = registryInBox.R5[AvlTree].get
-//    val expectedNft = reservationsState.get(hashedResolver, proof).get
+    val proof = getVar[Coll[Byte]](2).get
+    val reservationsState = registryInBox.R5[AvlTree].get
+    val expectedNft = reservationsState.get(hashedResolver, proof).get
     val suppliedReservationNft = reservationInBox.tokens(0)._1
 
     // validity checks
     // reserved resolver in box nft matches mint request in box nft
     val validReservationBoxNft = suppliedReservationNft == requestReservedResolverNftId
     // reserved resolver in box nft matches reservation nft stored in registry
-//    val validNft = suppliedReservationNft == expectedNft
-//    // user making request knew label ++ tld
-//    val validHashedResolver = reservationInBox.R4[Coll[Byte]].get == hashedResolver
-//    val validBuyerPk = reservationInBox.R5[GroupElement].get == buyerPk
-//    val validAddress =  reservationInBox.R6[Coll[Byte]].get == resolveAddress
+    val validNft = suppliedReservationNft == expectedNft
+    // user making request knew label ++ tld
+    val validHashedResolver = reservationInBox.R4[Coll[Byte]].get == hashedResolver
+    val validBuyerPk = reservationInBox.R5[GroupElement].get == buyerPk
+    val validAddress =  reservationInBox.R6[Coll[Byte]].get == resolveAddress
 
-    validReservationBoxNft
-//    validNft &&
-//    validHashedResolver &&
-//    validBuyerPk &&
-//    validAddress
+    validReservationBoxNft &&
+    validNft &&
+    validHashedResolver &&
+    validBuyerPk &&
+    validAddress
   }
 
   val validFundsPaid = {
@@ -154,12 +154,12 @@
   val validBoxes = validConfigBox && validRegistryInBox && validSuccessorBox && validResolverBox
 
   sigmaProp(
-//    validBoxes &&
+    validBoxes &&
     validLabel &&
     validTld &&
     validReservation &&
-//    validReservationTreeUpdate &&
-//    validResolverTreeUpdate &&
+    validReservationTreeUpdate &&
+    validResolverTreeUpdate &&
     validFundsPaid
   )
 }
