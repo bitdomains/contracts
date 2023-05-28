@@ -22,7 +22,8 @@ case class MintResolverContractScenario(
     existingReservedLabel: String = "aaaa",
     existingTld: String = "erg",
     overrideExistingTldState: Option[String] = None,
-    existingReservationNft: String = randomErgoId
+    existingReservationNft: String = randomErgoId,
+    overrideExistingReservationNft: Option[String] = None
 )(implicit
     ctx: BlockchainContext
 ) extends ContractScenario[MintResolverTransactionBuilder] {
@@ -40,8 +41,9 @@ case class MintResolverContractScenario(
   }
   var reservationsMap: RegistryState = {
     val map = defaultRegistryMap
+    val nft = overrideExistingReservationNft.getOrElse(existingReservationNft)
     map.insert(
-      (Blake2b256(existingReservedLabel ++ existingTld), existingReservationNft)
+      (Blake2b256(existingReservedLabel ++ existingTld), nft)
     )
     map
   }
@@ -67,6 +69,7 @@ case class MintResolverContractScenario(
 
   var reservedResolverIn: ReservedResolverBoxBuilder =
     ReservedResolverBoxBuilder()
+      .withHashedReservation(Blake2b256(mintLabel ++ mintTld))
 
   var resolverOut: ResolverBoxBuilder = ResolverBoxBuilder()
     .withTld(existingTld)
@@ -122,7 +125,6 @@ case class MintResolverContractScenario(
     val reservedResolverInBox =
       reservedResolverIn
         .withNftId(existingReservationNft)
-        .withHashedReservation(Blake2b256(mintLabel ++ mintTld))
         .build()
         .convertToInputWith(fakeTxId1, fakeIndex)
 

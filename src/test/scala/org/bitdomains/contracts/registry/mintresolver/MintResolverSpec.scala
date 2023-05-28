@@ -9,6 +9,7 @@ import org.bitdomains.contracts.{
 import org.ergoplatform.appkit.{ErgoToken, TokenBalanceException}
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should
+import scorex.crypto.hash.Blake2b256
 import sigmastate.eval.CostingSigmaDslBuilder.GroupElement
 import sigmastate.lang.exceptions.InterpreterException
 
@@ -217,7 +218,9 @@ class MintResolverSpec
   "validReservation" should "fail if nft wasn't the same as nft in reservations state" in {
     withBlockchain { implicit ctx =>
       val scenario =
-        MintResolverContractScenario(overrideExistingTldState = Some("ada"))
+        MintResolverContractScenario(overrideExistingReservationNft =
+          Some(randomErgoId)
+        )
 
       (the[InterpreterException] thrownBy scenario
         .mkAndSignTx()).getMessage should be(
@@ -226,7 +229,44 @@ class MintResolverSpec
     }
   }
 
-  // hashed resolver mismatch
-  // buyerpk mismatch
-  // resolveaddress mismatch
+  "validReservation" should "fail if hashedResolver mismatch" in {
+    withBlockchain { implicit ctx =>
+      val scenario = MintResolverContractScenario()
+
+      scenario.reservedResolverIn.withHashedReservation(Blake2b256("incorrect"))
+
+      (the[InterpreterException] thrownBy scenario
+        .mkAndSignTx()).getMessage should be(
+        "Script reduced to false"
+      )
+    }
+  }
+
+  "validReservation" should "fail if buyerPk mismatch" in {
+    withBlockchain { implicit ctx =>
+      val scenario = MintResolverContractScenario()
+
+      scenario.reservedResolverIn.withBuyerPk(
+        GroupElement(randomProverInput.publicImage.value)
+      )
+
+      (the[InterpreterException] thrownBy scenario
+        .mkAndSignTx()).getMessage should be(
+        "Script reduced to false"
+      )
+    }
+  }
+
+  "validReservation" should "fail if resolveAddress mismatch" in {
+    withBlockchain { implicit ctx =>
+      val scenario = MintResolverContractScenario()
+
+      scenario.reservedResolverIn.withResolveAddress("4MQyMKvMbnCJG3aJ")
+
+      (the[InterpreterException] thrownBy scenario
+        .mkAndSignTx()).getMessage should be(
+        "Script reduced to false"
+      )
+    }
+  }
 }

@@ -104,7 +104,6 @@
   // remove reserved resolver from Registry.reservation
   val validReservationTreeUpdate = {
     val proof = getVar[Coll[Byte]](2).get
-
     val reservationsState = registryInBox.R5[AvlTree].get
     val removeKeys: Coll[Coll[Byte]] = Coll(hashedResolver)
     val actualState = reservationsState.remove(removeKeys, proof).get
