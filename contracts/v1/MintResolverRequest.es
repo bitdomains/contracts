@@ -5,8 +5,8 @@
   //
   // [1] Mint Resolver
   // Creates a resolver box/nft that is used for address resolution.
-  // This action is called by users & on behalf of users by off-chain bots to create resolvers
-  // for their specified label (name) and registrar (TLD).
+  // This transaction is created on behalf of users by off-chain bots to create resolvers
+  // for their specified label (name) and registrar (TLD) by chaining together many `MintResolver` transactions.
   //
   //   Input                      |  Output        |  Data-Input
   // ------------------------------------------------------------

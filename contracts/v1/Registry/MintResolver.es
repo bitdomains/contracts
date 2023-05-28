@@ -5,12 +5,12 @@
   //
   // [1] Mint Resolver
   // Creates a resolver box/nft that is used for address resolution.
-  //
-  // TODO: description
+  // This transaction is created on behalf of users by off-chain bots to create resolvers
+  // for their specified label (name) and registrar (TLD) by chaining together many `MintResolver` transactions.
   //
   //   Input                      |  Output        |  Data-Input
   // ------------------------------------------------------------
-  // 0 Registry                   |  Registry      |  Config
+  // 0 Registry                   |  Registry      |
   // 1 MintResolver               |  MintResolver  |
   // 2 MintResolverRequest        |  Resolver      |
   // 3 ReservedResolver           |                |
