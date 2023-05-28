@@ -2,6 +2,7 @@ package org.bitdomains
 
 import io.getblok.getblok_plasma.PlasmaParameters
 import io.getblok.getblok_plasma.collections.PlasmaMap
+import org.bouncycastle.util.BigIntegers
 import org.ergoplatform.appkit.{
   ErgoClient,
   JavaHelpers,
@@ -12,6 +13,7 @@ import org.ergoplatform.appkit.{
 import org.ergoplatform.wallet.secrets.ExtendedSecretKey
 import scorex.utils.Random
 import sigmastate.AvlTreeFlags
+import sigmastate.basics.DLogProtocol.DLogProverInput
 
 package object contracts {
   type RegistryState = PlasmaMap[Array[Byte], String]
@@ -58,5 +60,9 @@ package object contracts {
     val path = JavaHelpers.eip3DerivationParent
 
     rootSecret.derive(path)
+  }
+
+  def randomProverInput: DLogProverInput = {
+    DLogProverInput(BigIntegers.fromUnsignedByteArray(Random.randomBytes(32)))
   }
 }

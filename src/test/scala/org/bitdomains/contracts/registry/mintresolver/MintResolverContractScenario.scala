@@ -18,21 +18,24 @@ import org.bitdomains.contracts.utils.scenarios.ContractScenario
 import org.ergoplatform.appkit.{BlockchainContext, ContextVar}
 import scorex.crypto.hash.Blake2b256
 
-case class MintResolverContractScenario(implicit
+case class MintResolverContractScenario(
+    existingReservedLabel: String = "aaaa",
+    existingTld: String = "erg",
+    overrideExistingTldState: Option[String] = None,
+    existingReservationNft: String = randomErgoId
+)(implicit
     ctx: BlockchainContext
 ) extends ContractScenario[MintResolverTransactionBuilder] {
-  val existingTld = "erg"
-  val existingReservedLabel = "myname"
-  val existingReservationNft = randomErgoId
-
   val mintLabel = existingReservedLabel
   val mintTld = existingTld
 
   var newResolverNft = ""
+  var overrideNewResolverNft: Option[String] = None
 
   var tldState: RegistryState = {
     val map = defaultRegistryMap
-    map.insert((Blake2b256(existingTld), bytesToHex(existingTld.getBytes)))
+    val tld = overrideExistingTldState.getOrElse(existingTld)
+    map.insert((Blake2b256(tld), bytesToHex(tld.getBytes)))
     map
   }
   var reservationsMap: RegistryState = {
@@ -68,6 +71,7 @@ case class MintResolverContractScenario(implicit
   var resolverOut: ResolverBoxBuilder = ResolverBoxBuilder()
     .withTld(existingTld)
     .withLabel(existingReservedLabel)
+  var resolverOutNftAmount: Int = 1
 
   var configDataIn: ConfigBoxBuilder = ConfigBoxBuilder()
 
@@ -92,7 +96,8 @@ case class MintResolverContractScenario(implicit
         .withReservationsMap(reservationsMap)
         .build()
         .convertToInputWith(fakeTxId3, fakeIndex)
-    newResolverNft = registryInBox.getId.toString
+    newResolverNft =
+      overrideNewResolverNft.getOrElse(registryInBox.getId.toString)
 
     avlOps()
 
@@ -117,10 +122,12 @@ case class MintResolverContractScenario(implicit
     val reservedResolverInBox =
       reservedResolverIn
         .withNftId(existingReservationNft)
+        .withHashedReservation(Blake2b256(mintLabel ++ mintTld))
         .build()
         .convertToInputWith(fakeTxId1, fakeIndex)
 
-    val resolverOutBox = resolverOut.withNftId(newResolverNft).build()
+    val resolverOutBox =
+      resolverOut.withNftId(newResolverNft, resolverOutNftAmount).build()
 
     val configDataInBox =
       configDataIn

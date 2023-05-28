@@ -149,7 +149,7 @@
 
   // successor box valid
   val validSuccessorBox = successorOutBox.propositionBytes == SELF.propositionBytes && // script preserved
-    successorOutBox.tokens == SELF.tokens // nft preserved
+    successorOutBox.tokens(0)._1 == SELF.tokens(0)._1 // nft preserved
 
   val validBoxes = validConfigBox && validRegistryInBox && validSuccessorBox && validResolverBox
 

@@ -44,7 +44,7 @@ class ConfigSpec
     withBlockchain { implicit ctx =>
       val scenario = ConfigContractScenario()
 
-      scenario.configOut = scenario.configOut.withScript(defaultScript)
+      scenario.configOut.withScript(defaultScript)
 
       (the[InterpreterException] thrownBy scenario
         .mkAndSignTx()).getMessage should be(
@@ -61,7 +61,7 @@ class ConfigSpec
 
       scenario.adminIn.withTokens(new ErgoToken(extraNftId, 2))
       scenario.adminOut.withTokens(new ErgoToken(extraNftId, 1))
-      scenario.configOut = scenario.configOut.withNftId(extraNftId)
+      scenario.configOut.withNftId(extraNftId)
 
       (the[InterpreterException] thrownBy scenario
         .mkAndSignTx()).getMessage should be(
