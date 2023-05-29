@@ -70,9 +70,11 @@
     inResolversState.digest == outResolversState.digest // ensure resolvers are unchanged
   } else true // MintResolver script will validate/update tree
 
-  val validReservations = if (!validResolverReservation) {
+  val validReservations = if (validMintResolver || validResolverReservation) {
+    true
+  } else {
     inReservationsState.digest == outReservationsState.digest // ensure reservations are unchanged
-  } else true // ResolverReservation script will validate/update tree
+  }
 
   val validSuccessorBox = successorOutBox.propositionBytes == SELF.propositionBytes &&
     SELF.tokens == successorOutBox.tokens &&

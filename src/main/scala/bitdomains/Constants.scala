@@ -5,6 +5,7 @@ import org.ergoplatform.ErgoAddressEncoder.TestnetNetworkPrefix
 import scorex.crypto.hash.{Blake2b256, Digest32}
 
 object Constants {
+  val contractsVersion = 1
   val network: ErgoAddressEncoder.NetworkPrefix = TestnetNetworkPrefix
 
   // Registry action nfts
@@ -12,7 +13,7 @@ object Constants {
     "ba57c53a215c8d135ff067e3e7b3a11da64690041a20f659e3a1cc14b1c7ae37"
   val adminNft =
     "94af8793a1f7b427831dcb48368ffc55c68d319d525ea24510ac38b75e280a8c"
-  val configNfg =
+  val configNft =
     "94af8793a1f7b427831dcb48368ffc55c68d319d525ea24510ac38b75e280ccc"
   val registryNft =
     "94af8793a1f7b427831dcb48368ffc55c68d319d525ea24510ac38b75e280a8e"
@@ -23,6 +24,7 @@ object Constants {
     "mintResolverNft" -> mintResolverNft,
     "adminNft" -> adminNft,
     "registryNft" -> registryNft,
+    "configNft" -> configNft,
     "resolverReservationNft" -> resolverReservationNft,
     "resolverScriptHash" -> Utils.bytesToHex(resolverScriptHash),
     "reservedResolverScriptHash" -> Utils.bytesToHex(reservedResolverScriptHash)
@@ -40,7 +42,7 @@ object Constants {
   private def readContract(path: String, subs: Map[String, String]) = {
     substitute(
       scala.io.Source
-        .fromFile("contracts/" + path, "utf-8")
+        .fromFile(s"contracts/v$contractsVersion/" + path, "utf-8")
         .getLines
         .mkString("\n"),
       subs
@@ -71,6 +73,9 @@ object Constants {
 
   val reserveResolverRequestScript: String =
     readContract("ReserveResolverRequest.es", nftDictionary)
+
+  val mintResolverRequestScript: String =
+    readContract("MintResolverRequest.es", nftDictionary)
 
   val configScript: String = readContract("Admin/Config.es", nftDictionary)
 }

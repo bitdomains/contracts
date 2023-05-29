@@ -3,12 +3,13 @@ package org.bitdomains.contracts.utils.builders
 import org.ergoplatform.appkit.{
   Address,
   BlockchainContext,
+  Parameters,
   UnsignedTransaction,
   UnsignedTransactionBuilder
 }
 
 abstract class TransactionBuilder(
-    defaultFee: Long = 1e7.toLong,
+    defaultFee: Long = Parameters.MinFee,
     defaultChangeAddress: Address = Address.create("4MQyML64GnzMxZgm")
 )(implicit ctx: BlockchainContext)
     extends BaseBuilder[UnsignedTransactionBuilder, UnsignedTransaction] {
