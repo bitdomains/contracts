@@ -85,7 +85,7 @@
     // valid tokens
     val nft = resolverOutBox.tokens(0)
     val validOutNft = nft._1 == expectedNftId && nft._2 == 1L
-    val validTokens = resolverOutBox.tokens.size == 1 // force reservation nft to be burnt
+    val validTokens = resolverOutBox.tokens.size == 1
 
     validScript &&
     validOwnerPk &&
