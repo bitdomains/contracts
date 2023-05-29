@@ -85,6 +85,7 @@
     val resolverState = registryInBox.R4[AvlTree].get
     val proof = getVar[Coll[Byte]](0).get
     val exists = resolverState.contains(hashedResolverReservation, proof)
+
     !exists
   }
 
@@ -92,7 +93,7 @@
   val validFundsPaid = true
 
   val validSuccessorBox = successorOutBox.propositionBytes == SELF.propositionBytes && // script preserved
-    successorOutBox.tokens(0) == SELF.tokens(0) // nft preserved
+    successorOutBox.tokens == SELF.tokens // tokens preserved
 
   sigmaProp(
     validRegistryInBox &&

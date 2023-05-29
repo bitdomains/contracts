@@ -62,7 +62,7 @@
   }
 
   val validSuccessor = successorBox.propositionBytes == SELF.propositionBytes &&
-    successorBox.tokens(0)._1 == SELF.tokens(0)._1
+    successorBox.tokens == SELF.tokens
 
   val isAdmin = adminInBox.tokens(0)._1 == adminNft
 

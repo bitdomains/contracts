@@ -56,7 +56,10 @@ object Constants {
     Blake2b256.hash(resolverScriptTree.bytes)
 
   lazy val reservedResolverScript: String =
-    readContract("ReservedResolver.es", Map.empty)
+    readContract(
+      "ReservedResolver.es",
+      Map("mintResolverNft" -> mintResolverNft, "registryNft" -> registryNft)
+    )
   private lazy val reservedResolverScriptTree =
     Utils.compile(Map.empty, reservedResolverScript, network)
   lazy val reservedResolverScriptHash: Digest32 =
