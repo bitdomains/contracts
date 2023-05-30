@@ -25,7 +25,7 @@
   //                        For example if TLD is "erg" an Ergo address, if TLD is "ada" a Cardano address.
   //
   // TOKENS
-  //  0: (Coll[Byte]) Nft id uniquely identifying this reservation.
+  //  0: Nft uniquely identifying this reservation.
 
   // boxes
   val registryInBox = INPUTS(0)
