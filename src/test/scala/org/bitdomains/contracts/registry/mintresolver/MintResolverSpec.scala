@@ -128,7 +128,7 @@ class MintResolverSpec
     withBlockchain { implicit ctx =>
       val scenario = MintResolverContractScenario()
 
-      scenario.resolverOut.withBuyerPk(
+      scenario.resolverOut.withOwnerPk(
         GroupElement(randomProverInput.publicImage.value)
       )
 

@@ -9,7 +9,7 @@ import special.sigma.GroupElement
 
 case class ResolverBoxBuilder(implicit ctx: BlockchainContext)
     extends BoxBuilder(resolverScript) {
-  private var buyerPk: GroupElement = GroupElement(walletSk.publicImage.value)
+  private var ownerPk: GroupElement = GroupElement(walletSk.publicImage.value)
 
   private var label: String = ""
 
@@ -17,8 +17,8 @@ case class ResolverBoxBuilder(implicit ctx: BlockchainContext)
 
   private var resolveAddress: String = "4MQyML64GnzMxZgm"
 
-  def withBuyerPk(buyerPk: GroupElement): this.type = {
-    this.buyerPk = buyerPk
+  def withOwnerPk(ownerPk: GroupElement): this.type = {
+    this.ownerPk = ownerPk
     this
   }
 
@@ -41,7 +41,7 @@ case class ResolverBoxBuilder(implicit ctx: BlockchainContext)
     this
       .partialBuild()
       .registers(
-        ErgoValue.of(buyerPk),
+        ErgoValue.of(ownerPk),
         ErgoValue.of(label.getBytes),
         ErgoValue.of(tld.getBytes),
         ErgoValue.of(resolveAddress.getBytes)
