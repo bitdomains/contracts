@@ -37,6 +37,8 @@
   //  R6: CONST (Coll[Byte])    Registrar/TLD, "erg" for example.
   //  R7: MUT   (Coll[Byte])    Address to resolve to, this should be set based on the TLD.
   //                              For example if TLD is "erg" an Ergo address, if TLD is "ada" a Cardano address.
+  // TOKENS
+  //  0: (CONST) Nft uniquely identifying this resoler (label ++ tld combination).
 
   val successor = OUTPUTS(0)
 

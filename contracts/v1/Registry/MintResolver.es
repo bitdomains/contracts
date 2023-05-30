@@ -10,7 +10,7 @@
   //
   //   Input                      |  Output        |  Data-Input
   // ------------------------------------------------------------
-  // 0 Registry                   |  Registry      |
+  // 0 Registry                   |  Registry      | Config
   // 1 MintResolver               |  MintResolver  |
   // 2 MintResolverRequest        |  Resolver      |
   // 3 ReservedResolver           |                |
@@ -82,11 +82,18 @@
     val validOutLabel = resolverOutBox.R5[Coll[Byte]].get == label
     val validOutTld = resolverOutBox.R6[Coll[Byte]].get == tld
     val validAddress = resolverOutBox.R7[Coll[Byte]].get == resolveAddress
-    // valid nft
+    // valid tokens
     val nft = resolverOutBox.tokens(0)
     val validOutNft = nft._1 == expectedNftId && nft._2 == 1L
+    val validTokens = resolverOutBox.tokens.size == 1
 
-    validScript && validOwnerPk && validOutLabel && validOutTld && validAddress && validOutNft
+    validScript &&
+    validOwnerPk &&
+    validOutLabel &&
+    validOutTld &&
+    validAddress &&
+    validOutNft &&
+    validTokens
   }
 
   // insert resolver into Registry.resolvers avl tree
@@ -148,7 +155,7 @@
 
   // successor box valid
   val validSuccessorBox = successorOutBox.propositionBytes == SELF.propositionBytes && // script preserved
-    successorOutBox.tokens(0)._1 == SELF.tokens(0)._1 // nft preserved
+    successorOutBox.tokens == SELF.tokens // tokens preserved
 
   val validBoxes = validConfigBox && validRegistryInBox && validSuccessorBox && validResolverBox
 
