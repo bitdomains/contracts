@@ -138,7 +138,9 @@ for each SK in list of generated SKs:
     Add box to list of owned Resolver boxes
 ```
 
+One downside here is that it limits the nodes that we can depend on to retrieve data. We will only be able to use nodes that have the indexer enabled, although this might not be a problem as wallets would likely be depending on indexer nodes anyway.
+
 ### Conclusion
 
-Currently I'm not completely decided on which solution to take & I have considered a few others. At this stage I think adding `R5` querying to indexer APIs
+Currently, I'm not completely decided on which solution to take & I have considered a few others. At this stage I think adding `R5` querying to indexer APIs
 is looking like a good solution. It will allow for efficient discovery while keeping on-chain data to a minimum.
