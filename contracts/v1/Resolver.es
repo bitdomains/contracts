@@ -19,8 +19,8 @@
   // [2] Transfer ownership
   // To transfer ownership send the box to self with R4 updated to the PK as a GroupElement of the new owner.
   //
-  // The new owner should ensure the resolver address is updated accordly. When a transfer action is performed
-  // the resolver address is zero'd to prevent funds going to previous owner.
+  // The new owner should ensure the resolver address is updated accordly otherwise funds
+  // will continue to go to the previous owner.
   //
   //   Input         |  Output        |  Data-Input
   // -----------------------------------------------
@@ -70,13 +70,7 @@
     validOwner && isAddressChanged
   }
 
-  val validOwnershipTransfer = {
-    val validOwnerPk = ownerPk != successor.R4[GroupElement].get
-    // resolve address should be zero'd to prevent funds going to previous owner
-    val validResolveAddress = successor.R7[Coll[Byte]].get.size == 0
-
-    validOwnerPk && validResolveAddress
-  }
+  val validOwnershipTransfer = ownerPk != successor.R4[GroupElement].get
 
   val validAction =
     action == ActionUpdateResolveAddress && validAddressUpdate ||

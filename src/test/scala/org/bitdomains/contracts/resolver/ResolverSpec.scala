@@ -44,7 +44,6 @@ class ResolverSpec
       scenario.resolverIn.withOwnerPk(
         GroupElement(proverInput.publicImage.value)
       )
-      scenario.resolverOut.withAddress("")
 
       noException should be thrownBy scenario.mkAndSignTx()
     }
@@ -72,7 +71,6 @@ class ResolverSpec
       scenario.resolverOut.withOwnerPk(
         GroupElement(proverInput.publicImage.value)
       )
-      scenario.resolverOut.withAddress("")
 
       (the[AssertionError] thrownBy scenario
         .mkAndSignTx()).getMessage should include(
@@ -92,7 +90,6 @@ class ResolverSpec
       scenario.resolverIn.withOwnerPk(
         GroupElement(proverInput.publicImage.value)
       )
-      scenario.resolverOut.withAddress("")
 
       scenario.resolverOut.withLabel("differentname")
 
@@ -114,7 +111,6 @@ class ResolverSpec
       scenario.resolverIn.withOwnerPk(
         GroupElement(proverInput.publicImage.value)
       )
-      scenario.resolverOut.withAddress("")
 
       scenario.resolverOut.withTld("ada")
 
@@ -136,7 +132,6 @@ class ResolverSpec
       scenario.resolverIn.withOwnerPk(
         GroupElement(proverInput.publicImage.value)
       )
-      scenario.resolverOut.withAddress("")
 
       scenario.resolverOut.withScript("sigmaProp(true && true)")
 
