@@ -36,6 +36,7 @@ class ResolverSpec
   it should "be possible to update ownerPk" in {
     withBlockchain { implicit ctx =>
       val scenario = ResolverContractScenario()
+      scenario.action = TransferOwnershipAction
       val proverInput = randomProverInput
 
       scenario.prover =
@@ -64,6 +65,12 @@ class ResolverSpec
   "isOwner" should "fail if tx not signed with prover input" in {
     withBlockchain { implicit ctx =>
       val scenario = ResolverContractScenario()
+      scenario.action = TransferOwnershipAction
+      val proverInput = randomProverInput
+
+      scenario.resolverOut.withOwnerPk(
+        GroupElement(proverInput.publicImage.value)
+      )
 
       (the[AssertionError] thrownBy scenario
         .mkAndSignTx()).getMessage should include(
@@ -75,6 +82,14 @@ class ResolverSpec
   "validLabel" should "fail if label changed" in {
     withBlockchain { implicit ctx =>
       val scenario = ResolverContractScenario()
+      scenario.action = TransferOwnershipAction
+      val proverInput = randomProverInput
+
+      scenario.prover =
+        ctx.newProverBuilder().withDLogSecret(proverInput.w).build()
+      scenario.resolverIn.withOwnerPk(
+        GroupElement(proverInput.publicImage.value)
+      )
 
       scenario.resolverOut.withLabel("differentname")
 
@@ -88,6 +103,14 @@ class ResolverSpec
   "validTld" should "fail if tld changed" in {
     withBlockchain { implicit ctx =>
       val scenario = ResolverContractScenario()
+      scenario.action = TransferOwnershipAction
+      val proverInput = randomProverInput
+
+      scenario.prover =
+        ctx.newProverBuilder().withDLogSecret(proverInput.w).build()
+      scenario.resolverIn.withOwnerPk(
+        GroupElement(proverInput.publicImage.value)
+      )
 
       scenario.resolverOut.withTld("ada")
 
@@ -101,6 +124,14 @@ class ResolverSpec
   "validScript" should "fail if script changed" in {
     withBlockchain { implicit ctx =>
       val scenario = ResolverContractScenario()
+      scenario.action = TransferOwnershipAction
+      val proverInput = randomProverInput
+
+      scenario.prover =
+        ctx.newProverBuilder().withDLogSecret(proverInput.w).build()
+      scenario.resolverIn.withOwnerPk(
+        GroupElement(proverInput.publicImage.value)
+      )
 
       scenario.resolverOut.withScript("sigmaProp(true && true)")
 
