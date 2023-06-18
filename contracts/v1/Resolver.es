@@ -1,11 +1,6 @@
 {
   // Resolver script
   //
-  // NOTES
-  //
-  // design this so it can be applied recursively?
-  // name.erg -> pay.name.erg -> another.pay.name.erg etc?
-  //
   // TRANSACTIONS
   //
   // [1] Update resolution address
@@ -24,8 +19,8 @@
   // [2] Transfer ownership
   // To transfer ownership send the box to self with R4 updated to the PK as a GroupElement of the new owner.
   //
-  // The new owner should ensure the resolver address is updated accordly otherwise funds
-  // will continue to go to the previous owner.
+  // The new owner should ensure the resolver address is updated accordly. When a transfer action is performed
+  // the resolver address is zero'd to prevent funds going to previous owner.
   //
   //   Input         |  Output        |  Data-Input
   // -----------------------------------------------
@@ -40,12 +35,20 @@
   // TOKENS
   //  0: (CONST) Nft uniquely identifying this resoler (label ++ tld combination).
 
+  // constants
+  val ActionUpdateResolveAddress = 1.toByte
+  val ActionTransferOwnership = 2.toByte
+
+  // acion to perform flag
+  val action = getVar[Byte](0).get
+
   val successor = OUTPUTS(0)
 
   // registers
   val ownerPk = SELF.R4[GroupElement].get
   val currentLabel = SELF.R5[Coll[Byte]].get
   val currentTld = SELF.R6[Coll[Byte]].get
+  val currentResolveAddress = SELF.R7[Coll[Byte]].get
   val currentNft = SELF.tokens(0)
 
   // only spendable by owner
@@ -59,10 +62,31 @@
   // script unchanged
   val validScript = SELF.propositionBytes == successor.propositionBytes
 
+  val validAddressUpdate = {
+    // owner shouldn't be updated for an address update action
+    val validOwner = ownerPk == successor.R4[GroupElement].get
+    val isAddressChanged = currentResolveAddress != successor.R7[Coll[Byte]].get
+
+    validOwner && isAddressChanged
+  }
+
+  val validOwnershipTransfer = {
+    val validOwnerPk = ownerPk != successor.R4[GroupElement].get
+    // resolve address should be zero'd to prevent funds going to previous owner
+    val validResolveAddress = successor.R7[Coll[Byte]].get.size == 0
+
+    validOwnerPk && validResolveAddress
+  }
+
+  val validAction =
+    action == ActionUpdateResolveAddress && validAddressUpdate ||
+    action == ActionTransferOwnership && validOwnershipTransfer
+
   isOwner && sigmaProp(
     validLabel &&
     validTld &&
     validNft &&
-    validScript
+    validScript &&
+    validAction
   )
 }
