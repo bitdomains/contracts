@@ -3,7 +3,7 @@ package org.bitdomains.contracts.mintresolverrequest
 import bitdomains.Constants.mintResolverRequestScript
 import org.bitdomains.contracts.utils.builders.BoxBuilder
 import org.bitdomains.contracts.{hexToBytes, walletSk}
-import org.ergoplatform.appkit.{BlockchainContext, ErgoValue, OutBox}
+import org.ergoplatform.appkit.{BlockchainContext, ErgoValue, OutBox, SigmaProp}
 import sigmastate.eval.CostingSigmaDslBuilder.GroupElement
 import special.sigma.GroupElement
 
@@ -11,7 +11,7 @@ case class MintResolverRequestBoxBuilder(implicit ctx: BlockchainContext)
     extends BoxBuilder(mintResolverRequestScript) {
   private var reservedResolverNftId: String = ""
 
-  private var buyerPk: GroupElement = GroupElement(walletSk.publicImage.value)
+  private var buyerProp: SigmaProp = new SigmaProp(walletSk.publicImage)
 
   private var label: String = ""
 
@@ -24,8 +24,8 @@ case class MintResolverRequestBoxBuilder(implicit ctx: BlockchainContext)
     this
   }
 
-  def withBuyerPk(buyerPk: GroupElement): this.type = {
-    this.buyerPk = buyerPk
+  def withBuyerProp(buyerProp: SigmaProp): this.type = {
+    this.buyerProp = buyerProp
     this
   }
 
@@ -49,7 +49,7 @@ case class MintResolverRequestBoxBuilder(implicit ctx: BlockchainContext)
       .partialBuild()
       .registers(
         ErgoValue.of(hexToBytes(reservedResolverNftId)),
-        ErgoValue.of(buyerPk),
+        ErgoValue.of(buyerProp),
         ErgoValue.of(label.getBytes),
         ErgoValue.of(tld.getBytes),
         ErgoValue.of(resolveAddress.getBytes)
