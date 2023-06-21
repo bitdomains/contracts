@@ -20,7 +20,6 @@ case class MintResolverRequestContractScenario(implicit
     .contract(ctx.compileContract(ConstantsBuilder.empty(), defaultScript))
 
   override def txBuilder: MintResolverRequestTransactionBuilder = {
-    // TODO: value - miner fee
     val refundOutBox =
       refundOut.value(mintResolverRequestIn.value - 10000000).build()
 
