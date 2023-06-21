@@ -52,9 +52,7 @@
 
   val buyerProp = SELF.R5[SigmaProp].get
 
-  val result = if (isRefundTx) {
+  if (isRefundTx) {
     buyerProp
   } else validMintResolverTx
-
-  result
 }
