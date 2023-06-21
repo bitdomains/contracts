@@ -57,5 +57,5 @@
   // refundable to buyer or must be a `Registry.ResolverReservation` tx
   if (isRefundTx) {
     buyerProp
-  } else validMintResolverTx
+  } else validReservedResolverTx
 }
