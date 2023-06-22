@@ -7,8 +7,12 @@ import org.bitdomains.contracts.{
   randomProverInput
 }
 import org.bitdomains.contracts.utils.scenarios.ContractScenario
-import org.ergoplatform.appkit.{BlockchainContext, ContextVar, ErgoValue}
-import sigmastate.eval.CostingSigmaDslBuilder.GroupElement
+import org.ergoplatform.appkit.{
+  BlockchainContext,
+  ContextVar,
+  ErgoValue,
+  SigmaProp
+}
 
 sealed trait ResolverAction {
   def id: Byte
@@ -24,7 +28,7 @@ case object TransferOwnershipAction extends ResolverAction {
 
 case class ResolverContractScenario(implicit ctx: BlockchainContext)
     extends ContractScenario[ResolverTransactionBuilder] {
-  private val defaultPk = GroupElement(randomProverInput.publicImage.value)
+  private val defaultOwnerProp = new SigmaProp(randomProverInput.publicImage)
   private val defaultLabel = "mename"
   private val defaultTld = "erg"
   private val defaultAddress = "9f5y5JY6J8Z6Q5Q"
@@ -37,14 +41,14 @@ case class ResolverContractScenario(implicit ctx: BlockchainContext)
     .withNftId(defaultNft)
     .withLabel(defaultLabel)
     .withTld(defaultTld)
-    .withOwnerPk(defaultPk)
+    .withOwnerProp(defaultOwnerProp)
     .withAddress(defaultAddress)
 
   var resolverOut: ResolverBoxBuilder = ResolverBoxBuilder()
     .withNftId(defaultNft)
     .withLabel(defaultLabel)
     .withTld(defaultTld)
-    .withOwnerPk(defaultPk)
+    .withOwnerProp(defaultOwnerProp)
     .withAddress(defaultAddress)
 
   override def txBuilder: ResolverTransactionBuilder = {

@@ -20,7 +20,7 @@
   //
   // REGISTERS
   //  R4: (Coll[Byte])    Hash of the reservation: blake2b256(label ++ tld).
-  //  R5: (GroupElement)  PK of the buyer.
+  //  R5: (SigmaProp)     Sigma proposition of the buyer.
   //  R6: (Coll[Byte])    Address to resolve to, this should be set based on the TLD.
   //                        For example if TLD is "erg" an Ergo address, if TLD is "ada" a Cardano address.
   //

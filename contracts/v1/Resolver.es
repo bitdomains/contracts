@@ -17,7 +17,7 @@
   // 0 Resolver      |  Resolver      |
   //
   // [2] Transfer ownership
-  // To transfer ownership send the box to self with R4 updated to the PK as a GroupElement of the new owner.
+  // To transfer ownership send the box to self with R4 updated to the sigma proposition of the new owner.
   //
   // The new owner should ensure the resolver address is updated accordly otherwise funds
   // will continue to go to the previous owner.
@@ -27,7 +27,7 @@
   // 0 Resolver      |  Resolver      |
   //
   // REGISTERS
-  //  R4: MUT   (GroupElement)  Owners pk
+  //  R4: MUT   (SigmaProp)     Owners sigma proposition.
   //  R5: CONST (Coll[Byte])    Label (name) that is used to resolve an address.
   //  R6: CONST (Coll[Byte])    Registrar/TLD, "erg" for example.
   //  R7: MUT   (Coll[Byte])    Address to resolve to, this should be set based on the TLD.
@@ -45,14 +45,12 @@
   val successor = OUTPUTS(0)
 
   // registers
-  val ownerPk = SELF.R4[GroupElement].get
+  val ownerProp = SELF.R4[SigmaProp].get
   val currentLabel = SELF.R5[Coll[Byte]].get
   val currentTld = SELF.R6[Coll[Byte]].get
   val currentResolveAddress = SELF.R7[Coll[Byte]].get
   val currentNft = SELF.tokens(0)
 
-  // only spendable by owner
-  val isOwner = proveDlog(ownerPk)
   // label unchanged
   val validLabel = currentLabel == successor.R5[Coll[Byte]].get
   // tld unchanged
@@ -64,19 +62,19 @@
 
   val validAddressUpdate = {
     // owner shouldn't be updated for an address update action
-    val validOwner = ownerPk == successor.R4[GroupElement].get
+    val validOwner = ownerProp == successor.R4[SigmaProp].get
     val isAddressChanged = currentResolveAddress != successor.R7[Coll[Byte]].get
 
     validOwner && isAddressChanged
   }
 
-  val validOwnershipTransfer = ownerPk != successor.R4[GroupElement].get
+  val validOwnershipTransfer = ownerProp != successor.R4[SigmaProp].get
 
   val validAction =
     action == ActionUpdateResolveAddress && validAddressUpdate ||
     action == ActionTransferOwnership && validOwnershipTransfer
 
-  isOwner && sigmaProp(
+  ownerProp && sigmaProp(
     validLabel &&
     validTld &&
     validNft &&
