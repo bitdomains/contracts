@@ -6,11 +6,10 @@ import org.bitdomains.contracts.{
   randomErgoId,
   randomProverInput
 }
-import org.ergoplatform.appkit.{ErgoToken, TokenBalanceException}
+import org.ergoplatform.appkit.{ErgoToken, SigmaProp, TokenBalanceException}
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should
 import scorex.crypto.hash.Blake2b256
-import sigmastate.eval.CostingSigmaDslBuilder.GroupElement
 import sigmastate.lang.exceptions.InterpreterException
 
 class MintResolverSpec
@@ -128,8 +127,8 @@ class MintResolverSpec
     withBlockchain { implicit ctx =>
       val scenario = MintResolverContractScenario()
 
-      scenario.resolverOut.withOwnerPk(
-        GroupElement(randomProverInput.publicImage.value)
+      scenario.resolverOut.withOwnerProp(
+        new SigmaProp(randomProverInput.publicImage)
       )
 
       (the[InterpreterException] thrownBy scenario
@@ -246,8 +245,8 @@ class MintResolverSpec
     withBlockchain { implicit ctx =>
       val scenario = MintResolverContractScenario()
 
-      scenario.reservedResolverIn.withBuyerPk(
-        GroupElement(randomProverInput.publicImage.value)
+      scenario.reservedResolverIn.withBuyerProp(
+        new SigmaProp(randomProverInput.publicImage)
       )
 
       (the[InterpreterException] thrownBy scenario

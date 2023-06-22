@@ -5,9 +5,9 @@ import org.bitdomains.contracts.{
   randomErgoId,
   randomProverInput
 }
+import org.ergoplatform.appkit.SigmaProp
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should
-import sigmastate.eval.CostingSigmaDslBuilder.GroupElement
 import sigmastate.lang.exceptions.InterpreterException
 
 class ResolverSpec
@@ -21,11 +21,11 @@ class ResolverSpec
 
       scenario.prover =
         ctx.newProverBuilder().withDLogSecret(proverInput.w).build()
-      scenario.resolverIn.withOwnerPk(
-        GroupElement(proverInput.publicImage.value)
+      scenario.resolverIn.withOwnerProp(
+        new SigmaProp(proverInput.publicImage)
       )
-      scenario.resolverOut.withOwnerPk(
-        GroupElement(proverInput.publicImage.value)
+      scenario.resolverOut.withOwnerProp(
+        new SigmaProp(proverInput.publicImage)
       )
       scenario.resolverOut.withAddress("9f5y5JY6JQZ6Q5Q")
 
@@ -41,8 +41,8 @@ class ResolverSpec
 
       scenario.prover =
         ctx.newProverBuilder().withDLogSecret(proverInput.w).build()
-      scenario.resolverIn.withOwnerPk(
-        GroupElement(proverInput.publicImage.value)
+      scenario.resolverIn.withOwnerProp(
+        new SigmaProp(proverInput.publicImage)
       )
 
       noException should be thrownBy scenario.mkAndSignTx()
@@ -68,8 +68,8 @@ class ResolverSpec
       scenario.action = TransferOwnershipAction
       val proverInput = randomProverInput
 
-      scenario.resolverOut.withOwnerPk(
-        GroupElement(proverInput.publicImage.value)
+      scenario.resolverOut.withOwnerProp(
+        new SigmaProp(proverInput.publicImage)
       )
 
       (the[AssertionError] thrownBy scenario
@@ -87,8 +87,8 @@ class ResolverSpec
 
       scenario.prover =
         ctx.newProverBuilder().withDLogSecret(proverInput.w).build()
-      scenario.resolverIn.withOwnerPk(
-        GroupElement(proverInput.publicImage.value)
+      scenario.resolverIn.withOwnerProp(
+        new SigmaProp(proverInput.publicImage)
       )
 
       scenario.resolverOut.withLabel("differentname")
@@ -108,8 +108,8 @@ class ResolverSpec
 
       scenario.prover =
         ctx.newProverBuilder().withDLogSecret(proverInput.w).build()
-      scenario.resolverIn.withOwnerPk(
-        GroupElement(proverInput.publicImage.value)
+      scenario.resolverIn.withOwnerProp(
+        new SigmaProp(proverInput.publicImage)
       )
 
       scenario.resolverOut.withTld("ada")
@@ -129,8 +129,8 @@ class ResolverSpec
 
       scenario.prover =
         ctx.newProverBuilder().withDLogSecret(proverInput.w).build()
-      scenario.resolverIn.withOwnerPk(
-        GroupElement(proverInput.publicImage.value)
+      scenario.resolverIn.withOwnerProp(
+        new SigmaProp(proverInput.publicImage)
       )
 
       scenario.resolverOut.withScript("sigmaProp(true && true)")

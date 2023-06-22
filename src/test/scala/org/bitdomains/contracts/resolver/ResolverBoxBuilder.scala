@@ -3,13 +3,11 @@ package org.bitdomains.contracts.resolver
 import bitdomains.Constants.resolverScript
 import org.bitdomains.contracts.utils.builders.BoxBuilder
 import org.bitdomains.contracts.walletSk
-import org.ergoplatform.appkit.{BlockchainContext, ErgoValue, OutBox}
-import sigmastate.eval.CostingSigmaDslBuilder.GroupElement
-import special.sigma.GroupElement
+import org.ergoplatform.appkit.{BlockchainContext, ErgoValue, OutBox, SigmaProp}
 
 case class ResolverBoxBuilder(implicit ctx: BlockchainContext)
     extends BoxBuilder(resolverScript) {
-  private var ownerPk: GroupElement = GroupElement(walletSk.publicImage.value)
+  private var ownerProp: SigmaProp = new SigmaProp(walletSk.publicImage)
 
   private var label: String = ""
 
@@ -17,8 +15,8 @@ case class ResolverBoxBuilder(implicit ctx: BlockchainContext)
 
   private var resolveAddress: String = "4MQyML64GnzMxZgm"
 
-  def withOwnerPk(ownerPk: GroupElement): this.type = {
-    this.ownerPk = ownerPk
+  def withOwnerProp(ownerProp: SigmaProp): this.type = {
+    this.ownerProp = ownerProp
     this
   }
 
@@ -41,7 +39,7 @@ case class ResolverBoxBuilder(implicit ctx: BlockchainContext)
     this
       .partialBuild()
       .registers(
-        ErgoValue.of(ownerPk),
+        ErgoValue.of(ownerProp),
         ErgoValue.of(label.getBytes),
         ErgoValue.of(tld.getBytes),
         ErgoValue.of(resolveAddress.getBytes)

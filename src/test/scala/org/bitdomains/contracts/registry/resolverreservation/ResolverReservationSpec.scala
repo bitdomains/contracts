@@ -1,11 +1,10 @@
 package org.bitdomains.contracts.registry.resolverreservation
 
 import org.bitdomains.contracts.{WithBlockchainContext, randomErgoId}
-import org.ergoplatform.appkit.{ErgoToken, JavaHelpers, SecretString}
+import org.ergoplatform.appkit.{ErgoToken, JavaHelpers, SecretString, SigmaProp}
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should
 import scorex.crypto.hash.Blake2b256
-import sigmastate.eval.CostingSigmaDslBuilder.GroupElement
 import sigmastate.lang.exceptions.InterpreterException
 
 class ResolverReservationSpec
@@ -78,8 +77,8 @@ class ResolverReservationSpec
       val path = JavaHelpers.eip3DerivationParent
       val sk = rootSecret.derive(path)
 
-      scenario.reservedResolverOut.withBuyerPk(
-        GroupElement(sk.publicImage.value)
+      scenario.reservedResolverOut.withBuyerProp(
+        new SigmaProp(sk.publicImage)
       )
 
       (the[InterpreterException] thrownBy scenario

@@ -3,17 +3,15 @@ package org.bitdomains.contracts.reservedresolver
 import bitdomains.Constants.reservedResolverScript
 import org.bitdomains.contracts.utils.builders.BoxBuilder
 import org.bitdomains.contracts.walletSk
-import org.ergoplatform.appkit.{BlockchainContext, ErgoValue, OutBox}
+import org.ergoplatform.appkit.{BlockchainContext, ErgoValue, OutBox, SigmaProp}
 import scorex.crypto.hash.Blake2b256
-import sigmastate.eval.CostingSigmaDslBuilder.GroupElement
-import special.sigma.GroupElement
 
 case class ReservedResolverBoxBuilder(implicit ctx: BlockchainContext)
     extends BoxBuilder(reservedResolverScript) {
   private var hashedReservation: Array[Byte] =
     Blake2b256("myname" ++ "erg") // label ++ tld
 
-  private var buyerPk: GroupElement = GroupElement(walletSk.publicImage.value)
+  private var buyerProp: SigmaProp = new SigmaProp(walletSk.publicImage)
 
   // sigmaProp(true)
   private var resolveAddress: String = "4MQyML64GnzMxZgm"
@@ -23,8 +21,8 @@ case class ReservedResolverBoxBuilder(implicit ctx: BlockchainContext)
     this
   }
 
-  def withBuyerPk(buyerPk: GroupElement): this.type = {
-    this.buyerPk = buyerPk
+  def withBuyerProp(buyerProp: SigmaProp): this.type = {
+    this.buyerProp = buyerProp
     this
   }
 
@@ -38,7 +36,7 @@ case class ReservedResolverBoxBuilder(implicit ctx: BlockchainContext)
       .partialBuild()
       .registers(
         ErgoValue.of(hashedReservation),
-        ErgoValue.of(buyerPk),
+        ErgoValue.of(buyerProp),
         ErgoValue.of(resolveAddress.getBytes)
       )
       .build()

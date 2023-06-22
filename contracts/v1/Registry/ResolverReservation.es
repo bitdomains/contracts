@@ -42,7 +42,7 @@
 
   // registers
   val hashedResolverReservation = requestInBox.R4[Coll[Byte]].get
-  val buyerPk = requestInBox.R5[GroupElement].get
+  val buyerProp = requestInBox.R5[SigmaProp].get
   val resolveAddress = requestInBox.R6[Coll[Byte]].get
 
   // scripts
@@ -60,13 +60,13 @@
     val validScript = blake2b256(resolverOutBox.propositionBytes) == reservedResolverScriptHash
     // valid registers
     val validHashedResolver = resolverOutBox.R4[Coll[Byte]].get == hashedResolverReservation
-    val validBuyerPk = resolverOutBox.R5[GroupElement].get == buyerPk
+    val validBuyerProp = resolverOutBox.R5[SigmaProp].get == buyerProp
     val validAddress = resolverOutBox.R6[Coll[Byte]].get == resolveAddress
     // valid nft
     val nft = resolverOutBox.tokens(0)
     val validOutNft = nft._1 == expectedNftId && nft._2 == 1L
 
-    validScript && validHashedResolver && validBuyerPk && validAddress && validOutNft
+    validScript && validHashedResolver && validBuyerProp && validAddress && validOutNft
   }
 
   val validReservedResolverStateUpdate = {

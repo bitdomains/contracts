@@ -44,7 +44,7 @@
 
   // registers
   val requestReservedResolverNftId = requestInBox.R4[Coll[Byte]].get
-  val buyerPk = requestInBox.R5[GroupElement].get
+  val buyerProp = requestInBox.R5[SigmaProp].get
   val label = requestInBox.R6[Coll[Byte]].get
   val tld = requestInBox.R7[Coll[Byte]].get
   val hashedResolver = blake2b256(label ++ tld)
@@ -78,7 +78,7 @@
     // valid script
     val validScript = blake2b256(resolverOutBox.propositionBytes) == fromBase16("$resolverScriptHash")
     // valid registers
-    val validOwnerPk = resolverOutBox.R4[GroupElement].get == buyerPk
+    val validOwnerProp = resolverOutBox.R4[SigmaProp].get == buyerProp
     val validOutLabel = resolverOutBox.R5[Coll[Byte]].get == label
     val validOutTld = resolverOutBox.R6[Coll[Byte]].get == tld
     val validAddress = resolverOutBox.R7[Coll[Byte]].get == resolveAddress
@@ -88,7 +88,7 @@
     val validTokens = resolverOutBox.tokens.size == 1
 
     validScript &&
-    validOwnerPk &&
+    validOwnerProp &&
     validOutLabel &&
     validOutTld &&
     validAddress &&
@@ -133,13 +133,13 @@
     val validNft = suppliedReservationNft == expectedNft
     // user making request knew label ++ tld
     val validHashedResolver = reservationInBox.R4[Coll[Byte]].get == hashedResolver
-    val validBuyerPk = reservationInBox.R5[GroupElement].get == buyerPk
+    val validBuyerProp = reservationInBox.R5[SigmaProp].get == buyerProp
     val validAddress =  reservationInBox.R6[Coll[Byte]].get == resolveAddress
 
     validReservationBoxNft &&
     validNft &&
     validHashedResolver &&
-    validBuyerPk &&
+    validBuyerProp &&
     validAddress
   }
 
