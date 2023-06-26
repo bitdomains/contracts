@@ -24,8 +24,7 @@
   // 2 ReserveResolverRequest     |  ReservedResolver     |
   //
   // [2] Refund
-  // This box can be spent to retrieve the contained ERGs if the spender can `proveDlog` the PK
-  // contained in R5. I.e sign the transaction using the associated SK.
+  // This box can be spent to retrieve the contained ERGs by providing the buyers sigma proposition.
   //
   // REGISTERS
   //  R4: (Coll[Byte])    Hash of the requested reservation: blake2b256(label ++ tld).

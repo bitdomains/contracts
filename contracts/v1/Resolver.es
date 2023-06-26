@@ -32,12 +32,15 @@
   //  R6: CONST (Coll[Byte])    Registrar/TLD, "erg" for example.
   //  R7: MUT   (Coll[Byte])    Address to resolve to, this should be set based on the TLD.
   //                              For example if TLD is "erg" an Ergo address, if TLD is "ada" a Cardano address.
+  //  R8: MUT   (AvlTree)       Subresolver AVL tree. subdomanName -> subResolverNftId mappings.
+  //
   // TOKENS
   //  0: (CONST) Nft uniquely identifying this resoler (label ++ tld combination).
 
   // constants
   val ActionUpdateResolveAddress = 1.toByte
   val ActionTransferOwnership = 2.toByte
+  val ActionMintSubResolver = 3.toByte
 
   // acion to perform flag
   val action = getVar[Byte](0).get
@@ -45,36 +48,44 @@
   val successor = OUTPUTS(0)
 
   // registers
-  val ownerProp = SELF.R4[SigmaProp].get
-  val currentLabel = SELF.R5[Coll[Byte]].get
-  val currentTld = SELF.R6[Coll[Byte]].get
-  val currentResolveAddress = SELF.R7[Coll[Byte]].get
-  val currentNft = SELF.tokens(0)
+  val selfOwnerProp = SELF.R4[SigmaProp].get
+  val selfLabel = SELF.R5[Coll[Byte]].get
+  val selfTld = SELF.R6[Coll[Byte]].get
+  val selfResolveAddress = SELF.R7[Coll[Byte]].get
+  val selfSubResolvers = SELF.R8[AvlTree].get
+  val selfNft = SELF.tokens(0)
 
   // label unchanged
-  val validLabel = currentLabel == successor.R5[Coll[Byte]].get
+  val validLabel = selfLabel == successor.R5[Coll[Byte]].get
   // tld unchanged
-  val validTld = currentTld == successor.R6[Coll[Byte]].get
+  val validTld = selfTld == successor.R6[Coll[Byte]].get
   // nft unchanged
-  val validNft = currentNft == successor.tokens(0)
+  val validNft = selfNft == successor.tokens(0)
   // script unchanged
   val validScript = SELF.propositionBytes == successor.propositionBytes
 
   val validAddressUpdate = {
     // owner shouldn't be updated for an address update action
-    val validOwner = ownerProp == successor.R4[SigmaProp].get
-    val isAddressChanged = currentResolveAddress != successor.R7[Coll[Byte]].get
+    val validOwner = selfOwnerProp == successor.R4[SigmaProp].get
+    val validSubResolvers = selfSubResolvers.digest == successor.R8[AvlTree].get.digest
+    val isAddressChanged = selfResolveAddress != successor.R7[Coll[Byte]].get
 
-    validOwner && isAddressChanged
+    isAddressChanged && validOwner && validSubResolvers
   }
 
-  val validOwnershipTransfer = ownerProp != successor.R4[SigmaProp].get
+  val validOwnershipTransfer = {
+    // ensure subresolver tree is cleared for new owner, 0x4ec[..] is the digest of an empty tree.
+    val validSubResolvers = successor.R8[AvlTree].get.digest == fromBase16("4ec61f485b98eb87153f7c57db4f5ecd75556fddbc403b41acf8441fde8e160900")
+    val ownerPropChanged = selfOwnerProp != successor.R4[SigmaProp].get
+
+    ownerPropChanged && validSubResolvers
+  }
 
   val validAction =
     action == ActionUpdateResolveAddress && validAddressUpdate ||
     action == ActionTransferOwnership && validOwnershipTransfer
 
-  ownerProp && sigmaProp(
+  selfOwnerProp && sigmaProp(
     validLabel &&
     validTld &&
     validNft &&

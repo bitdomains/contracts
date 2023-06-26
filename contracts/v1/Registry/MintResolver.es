@@ -82,6 +82,8 @@
     val validOutLabel = resolverOutBox.R5[Coll[Byte]].get == label
     val validOutTld = resolverOutBox.R6[Coll[Byte]].get == tld
     val validAddress = resolverOutBox.R7[Coll[Byte]].get == resolveAddress
+    // ensure subresolver tree is empty, 0x4ec[..] is the digest of an empty tree.
+    val validSubResolvers = resolverOutBox.R8[AvlTree].get.digest == fromBase16("4ec61f485b98eb87153f7c57db4f5ecd75556fddbc403b41acf8441fde8e160900")
     // valid tokens
     val nft = resolverOutBox.tokens(0)
     val validOutNft = nft._1 == expectedNftId && nft._2 == 1L
@@ -92,6 +94,7 @@
     validOutLabel &&
     validOutTld &&
     validAddress &&
+    validSubResolvers &&
     validOutNft &&
     validTokens
   }
