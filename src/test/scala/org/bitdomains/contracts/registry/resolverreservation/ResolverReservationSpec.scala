@@ -5,6 +5,7 @@ import org.ergoplatform.appkit.{ErgoToken, JavaHelpers, SecretString, SigmaProp}
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should
 import scorex.crypto.hash.Blake2b256
+import scorex.utils.Random
 import sigmastate.lang.exceptions.InterpreterException
 
 class ResolverReservationSpec
@@ -16,6 +17,19 @@ class ResolverReservationSpec
       val scenario = ResolverReservationContractScenario()
 
       noException should be thrownBy scenario.mkAndSignTx()
+    }
+  }
+
+  "validConfigBox" should "fail with incorrect nft" in {
+    withBlockchain { implicit ctx =>
+      val scenario = ResolverReservationContractScenario()
+
+      scenario.configDataInBox.withNftId(randomErgoId)
+
+      (the[InterpreterException] thrownBy scenario
+        .mkAndSignTx()).getMessage should be(
+        "Script reduced to false"
+      )
     }
   }
 
@@ -110,6 +124,19 @@ class ResolverReservationSpec
       val scenario = ResolverReservationContractScenario()
 
       scenario.reservedResolverOutNftAmount = 2
+
+      (the[InterpreterException] thrownBy scenario
+        .mkAndSignTx()).getMessage should be(
+        "Script reduced to false"
+      )
+    }
+  }
+
+  "validReservedResolverBox" should "fail if script hash is incorrect" in {
+    withBlockchain { implicit ctx =>
+      val scenario = ResolverReservationContractScenario()
+
+      scenario.configDataInBox.withReservedResolverHash(Random.randomBytes(32))
 
       (the[InterpreterException] thrownBy scenario
         .mkAndSignTx()).getMessage should be(
