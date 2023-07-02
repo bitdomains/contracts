@@ -25,7 +25,9 @@
   //  R5: MUT (Coll[Coll[Byte]]) Collection of script hashes for contracts making up the bitdomains protocol.
   //        R5[0] = ReservedResolverHash
   //        R5[1] = ResolverHash
-  //  R6: MUT ((Int, Coll[Byte])) Pair of base price for domain in USD and the NFT id of the oracle pool providing the price feed.
+  //  R6: MUT ((Coll[Int], Coll[Byte])) Pair of prices for protocol actions in USD and the NFT id of the oracle pool providing the price feed.
+  //        R6._1[0] = ResolverReservation price
+  //        R6._1[1] = MintResolver price
   //  R7: MUT (Coll[(SigmaProp, Int)])  Collection of fee collector -> fee basis points pairs.
   //        R7[0] = dev
   //        R7[1] = ui (SigmaProp should be unused here as it will be provided by the UI dev at tx build time via ContextVar)
