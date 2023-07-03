@@ -1,5 +1,6 @@
 package org.bitdomains.contracts.resolver
 
+import org.bitdomains.contracts.admin.config.ConfigBoxBuilder
 import org.bitdomains.contracts.{
   fakeIndex,
   fakeTxId1,
@@ -24,6 +25,10 @@ case object UpdateResolveAddressAction extends ResolverAction {
 
 case object TransferOwnershipAction extends ResolverAction {
   override def id: Byte = 2
+}
+
+case object UpgradeScriptAction extends ResolverAction {
+  override def id: Byte = 3
 }
 
 case class ResolverContractScenario(implicit ctx: BlockchainContext)
@@ -51,7 +56,14 @@ case class ResolverContractScenario(implicit ctx: BlockchainContext)
     .withOwnerProp(defaultOwnerProp)
     .withAddress(defaultAddress)
 
+  var configDataIn: ConfigBoxBuilder = ConfigBoxBuilder()
+
   override def txBuilder: ResolverTransactionBuilder = {
+    val configDataInBox =
+      configDataIn
+        .build()
+        .convertToInputWith(fakeTxId1, fakeIndex)
+
     ResolverTransactionBuilder()
       .withResolverIn(
         resolverIn
@@ -60,5 +72,6 @@ case class ResolverContractScenario(implicit ctx: BlockchainContext)
           .withContextVars(new ContextVar(0, ErgoValue.of(action.id)))
       )
       .withResolverOut(resolverOut.build())
+      .withConfigDataIn(configDataInBox)
   }
 }

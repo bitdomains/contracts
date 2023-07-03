@@ -14,7 +14,7 @@
   //
   //   Input         |  Output        |  Data-Input
   // -----------------------------------------------
-  // 0 Resolver      |  Resolver      |
+  // 0 Resolver      |  Resolver      |  Config
   //
   // [2] Transfer ownership
   // To transfer ownership send the box to self with R4 updated to the sigma proposition of the new owner.
@@ -24,7 +24,15 @@
   //
   //   Input         |  Output        |  Data-Input
   // -----------------------------------------------
-  // 0 Resolver      |  Resolver      |
+  // 0 Resolver      |  Resolver      |  Config
+  //
+  // [3] Update script
+  // Allows the owner of this `Resolver` to update the script to the latest version of the `Resolver` contract
+  // as defined by the bitdomains `Config` box.
+  //
+  //   Input         |  Output        |  Data-Input
+  // -----------------------------------------------
+  // 0 Resolver      |  Resolver      |  Config
   //
   // REGISTERS
   //  R4: MUT   (SigmaProp)     Owners sigma proposition.
@@ -38,27 +46,34 @@
   // constants
   val ActionUpdateResolveAddress = 1.toByte
   val ActionTransferOwnership = 2.toByte
+  val ActionUpdateScript = 3.toByte
 
   // acion to perform flag
   val action = getVar[Byte](0).get
 
+  // boxes
   val successor = OUTPUTS(0)
+  val config = CONTEXT.dataInputs(0)
 
   // registers
   val ownerProp = SELF.R4[SigmaProp].get
-  val currentLabel = SELF.R5[Coll[Byte]].get
-  val currentTld = SELF.R6[Coll[Byte]].get
   val currentResolveAddress = SELF.R7[Coll[Byte]].get
-  val currentNft = SELF.tokens(0)
 
+  val validConfigBox = config.tokens(0)._1 == fromBase16("$configNft")
   // label unchanged
-  val validLabel = currentLabel == successor.R5[Coll[Byte]].get
+  val validLabel = SELF.R5[Coll[Byte]].get == successor.R5[Coll[Byte]].get
   // tld unchanged
-  val validTld = currentTld == successor.R6[Coll[Byte]].get
+  val validTld = SELF.R6[Coll[Byte]].get == successor.R6[Coll[Byte]].get
   // nft unchanged
-  val validNft = currentNft == successor.tokens(0)
-  // script unchanged
-  val validScript = SELF.propositionBytes == successor.propositionBytes
+  val validNft = SELF.tokens(0) == successor.tokens(0)
+  // either script is unchanged or is updated to match the script hash in config box
+  val validScript = if (action == ActionUpdateScript) {
+      val scriptHashes = config.R5[Coll[Coll[Byte]]].get
+
+      blake2b256(successor.propositionBytes) == scriptHashes(1)
+    } else {
+      SELF.propositionBytes == successor.propositionBytes
+    }
 
   val validAddressUpdate = {
     // owner shouldn't be updated for an address update action
@@ -71,10 +86,12 @@
   val validOwnershipTransfer = ownerProp != successor.R4[SigmaProp].get
 
   val validAction =
+    action == ActionUpdateScript && true || // this case is verified in `validScript`
     action == ActionUpdateResolveAddress && validAddressUpdate ||
     action == ActionTransferOwnership && validOwnershipTransfer
 
   ownerProp && sigmaProp(
+    validConfigBox &&
     validLabel &&
     validTld &&
     validNft &&

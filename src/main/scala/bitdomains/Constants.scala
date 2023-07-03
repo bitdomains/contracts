@@ -47,7 +47,8 @@ object Constants {
     )
   }
 
-  lazy val resolverScript: String = readContract("Resolver.es", Map.empty)
+  lazy val resolverScript: String =
+    readContract("Resolver.es", Map("configNft" -> configNft))
   private lazy val resolverScriptTree =
     Utils.compile(Map.empty, resolverScript, network)
   lazy val resolverScriptHash: Digest32 =
