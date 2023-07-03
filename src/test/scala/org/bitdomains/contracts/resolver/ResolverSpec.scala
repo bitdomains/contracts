@@ -183,7 +183,9 @@ class ResolverSpec
       val newScriptHash = Blake2b256(compiledScript.getErgoTree.bytes)
 
       scenario.configDataIn.withResolverHash(newScriptHash)
-      scenario.resolverOut.withScript(newScript)
+      scenario.resolverOut
+        .withScript(newScript)
+        .withOwnerProp(new SigmaProp(proverInput.publicImage))
 
       noException should be thrownBy scenario.mkAndSignTx()
     }

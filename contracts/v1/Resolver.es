@@ -57,31 +57,26 @@
 
   // registers
   val ownerProp = SELF.R4[SigmaProp].get
-  val currentResolveAddress = SELF.R7[Coll[Byte]].get
 
   val validConfigBox = config.tokens(0)._1 == fromBase16("$configNft")
-  // label unchanged
-  val validLabel = SELF.R5[Coll[Byte]].get == successor.R5[Coll[Byte]].get
-  // tld unchanged
-  val validTld = SELF.R6[Coll[Byte]].get == successor.R6[Coll[Byte]].get
-  // nft unchanged
-  val validNft = SELF.tokens(0) == successor.tokens(0)
+
+  // label, tld, nft unchanged
+  val validImmutableValues = SELF.R5[Coll[Byte]].get == successor.R5[Coll[Byte]].get &&
+    SELF.R6[Coll[Byte]].get == successor.R6[Coll[Byte]].get &&
+    SELF.tokens(0) == successor.tokens(0)
+
+  val isOwnerUnchanged = ownerProp == successor.R4[SigmaProp].get
+
   // either script is unchanged or is updated to match the script hash in config box
   val validScript = if (action == ActionUpdateScript) {
       val scriptHashes = config.R5[Coll[Coll[Byte]]].get
 
-      blake2b256(successor.propositionBytes) == scriptHashes(1)
+      isOwnerUnchanged && blake2b256(successor.propositionBytes) == scriptHashes(1)
     } else {
       SELF.propositionBytes == successor.propositionBytes
     }
 
-  val validAddressUpdate = {
-    // owner shouldn't be updated for an address update action
-    val validOwner = ownerProp == successor.R4[SigmaProp].get
-    val isAddressChanged = currentResolveAddress != successor.R7[Coll[Byte]].get
-
-    validOwner && isAddressChanged
-  }
+  val validAddressUpdate = isOwnerUnchanged && SELF.R7[Coll[Byte]].get != successor.R7[Coll[Byte]].get
 
   val validOwnershipTransfer = ownerProp != successor.R4[SigmaProp].get
 
@@ -92,9 +87,7 @@
 
   ownerProp && sigmaProp(
     validConfigBox &&
-    validLabel &&
-    validTld &&
-    validNft &&
+    validImmutableValues &&
     validScript &&
     validAction
   )
