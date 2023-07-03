@@ -25,9 +25,7 @@ object Constants {
     "adminNft" -> adminNft,
     "registryNft" -> registryNft,
     "configNft" -> configNft,
-    "resolverReservationNft" -> resolverReservationNft,
-    "resolverScriptHash" -> Utils.bytesToHex(resolverScriptHash),
-    "reservedResolverScriptHash" -> Utils.bytesToHex(reservedResolverScriptHash)
+    "resolverReservationNft" -> resolverReservationNft
   )
 
   private def substitute(

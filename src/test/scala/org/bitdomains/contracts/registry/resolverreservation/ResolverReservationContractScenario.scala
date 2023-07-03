@@ -5,6 +5,7 @@ import org.bitdomains.contracts.reservedresolver.ReservedResolverBoxBuilder
 import org.bitdomains.contracts.reserveresolverrequest.ReserveResolverRequestBoxBuilder
 import org.bitdomains.contracts.utils.scenarios.ContractScenario
 import org.bitdomains.contracts._
+import org.bitdomains.contracts.admin.config.ConfigBoxBuilder
 import org.ergoplatform.appkit.{BlockchainContext, ContextVar}
 import scorex.crypto.hash.Blake2b256
 
@@ -43,6 +44,9 @@ case class ResolverReservationContractScenario(
   var reservedResolverOutNftOverride: Option[String] = None
   var reservedResolverOutNftAmount: Int = 1
 
+  var configDataInBox =
+    ConfigBoxBuilder()
+
   def doAvlOps(
       hashedResolver: Array[Byte] = this.hashedResolver,
       insertedResolverNft: String = ""
@@ -75,6 +79,9 @@ case class ResolverReservationContractScenario(
       reservedResolverOutNftAmount
     )
 
+    val configDataIn =
+      configDataInBox.build().convertToInputWith(fakeTxId1, fakeIndex)
+
     val resolverReservationInBox = resolverReservationIn
       .build()
       .convertToInputWith(fakeTxId1, fakeIndex)
@@ -91,5 +98,6 @@ case class ResolverReservationContractScenario(
           .convertToInputWith(fakeTxId1, fakeIndex)
       )
       .withReservedResolverOut(reservedResolverOut.build())
+      .withConfigDataIn(configDataIn)
   }
 }

@@ -10,6 +10,7 @@ import org.ergoplatform.appkit.{ErgoToken, SigmaProp, TokenBalanceException}
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should
 import scorex.crypto.hash.Blake2b256
+import scorex.utils.Random
 import sigmastate.lang.exceptions.InterpreterException
 
 class MintResolverSpec
@@ -85,6 +86,19 @@ class MintResolverSpec
       val scenario = MintResolverContractScenario()
 
       scenario.resolverOut.withScript(defaultScript)
+
+      (the[InterpreterException] thrownBy scenario
+        .mkAndSignTx()).getMessage should be(
+        "Script reduced to false"
+      )
+    }
+  }
+
+  "validResolverBox" should "fail if script hash doesn't match config" in {
+    withBlockchain { implicit ctx =>
+      val scenario = MintResolverContractScenario()
+
+      scenario.configDataIn.withResolverHash(Random.randomBytes(32))
 
       (the[InterpreterException] thrownBy scenario
         .mkAndSignTx()).getMessage should be(

@@ -1,4 +1,5 @@
-{ // Config script
+{
+  // Config script
   //
   // TRANSACTIONS
   //
@@ -20,7 +21,17 @@
   //  tokens(0): configNft
   //
   // REGISTERS
-  //  R4: MUT (AvlTree) TLD state tree. Maintains valid registrars such as "erg" & "ada"
+  //  R4: MUT (AvlTree) TLD state tree. Maintains valid registrars such as "erg" & "ada".
+  //  R5: MUT (Coll[Coll[Byte]]) Collection of script hashes for contracts making up the bitdomains protocol.
+  //        R5[0] = ReservedResolverHash
+  //        R5[1] = ResolverHash
+  //  R6: MUT ((Coll[Int], Coll[Byte])) Pair of prices for protocol actions in USD and the NFT id of the oracle pool providing the price feed.
+  //        R6._1[0] = ResolverReservation price
+  //        R6._1[1] = MintResolver price
+  //  R7: MUT (Coll[(SigmaProp, Int)])  Collection of fee collector -> fee basis points pairs.
+  //        R7[0] = dev
+  //        R7[1] = ui (SigmaProp should be unused here as it will be provided by the UI dev at tx build time via ContextVar)
+  //        R7[2] = DAO
   //
   // VARIABLES
   //  0: (Byte)       Action flag (ActionUpdateTld == 0x1)
@@ -29,6 +40,9 @@
 
   // constants
   val ActionUpdateTld = 1.toByte
+  val ActionUpdateScriptHashes = 2.toByte
+  val ActionUpdatePricing = 3.toByte
+  val ActionUpdateFees = 4.toByte
 
   // action to perform flag
   val action = getVar[Byte](0).get
@@ -44,11 +58,9 @@
   // nfts
   val adminNft = fromBase16("$adminNft")
 
-  // configuration
-  val cfgTldState = SELF.R4[AvlTree].get
-
   // validity
   val validUpdateTld = {
+    val cfgTldState = SELF.R4[AvlTree].get
     val proof = getVar[Coll[Byte]](2).get
 
     val newTldVal = getVar[Coll[Byte]](1).get

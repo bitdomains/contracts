@@ -19,7 +19,7 @@
   //
   //   Input                      |  Output               |  Data-Input
   // --------------------------------------------------------------------
-  // 0 Registry                   |  Registry             |
+  // 0 Registry                   |  Registry             |  Config
   // 1 ResolverReservation        |  ResolverReservation  |
   // 2 ReserveResolverRequest     |  ReservedResolver     |
   //
@@ -39,14 +39,12 @@
   val successorOutBox = OUTPUTS(1)
   val requestInBox = INPUTS(2)
   val resolverOutBox = OUTPUTS(2)
+  val config = CONTEXT.dataInputs(0)
 
   // registers
   val hashedResolverReservation = requestInBox.R4[Coll[Byte]].get
   val buyerProp = requestInBox.R5[SigmaProp].get
   val resolveAddress = requestInBox.R6[Coll[Byte]].get
-
-  // scripts
-  val reservedResolverScriptHash = fromBase16("$reservedResolverScriptHash")
 
   // nfts
   val registryNft = fromBase16("$registryNft")
@@ -54,10 +52,12 @@
 
   // verification
   val validRegistryInBox = registryInBox.tokens(0)._1 == registryNft
+  val validConfigBox = config.tokens(0)._1 == fromBase16("$configNft")
 
   val validReservedResolverBox = {
+    val scriptHashes = config.R5[Coll[Coll[Byte]]].get
     // valid script
-    val validScript = blake2b256(resolverOutBox.propositionBytes) == reservedResolverScriptHash
+    val validScript = blake2b256(resolverOutBox.propositionBytes) == scriptHashes(0)
     // valid registers
     val validHashedResolver = resolverOutBox.R4[Coll[Byte]].get == hashedResolverReservation
     val validBuyerProp = resolverOutBox.R5[SigmaProp].get == buyerProp
@@ -90,17 +90,21 @@
   }
 
   // valid funds are paid to bitdomains,etc
-  val validFundsPaid = true
+  val validFundsPaid = {
+    // ensure config.price is paid to config.dev
+    // if uiFee is supplied ensure config.uiFeePercent is paid to uiFee
+    true
+  }
 
   val validSuccessorBox = successorOutBox.propositionBytes == SELF.propositionBytes && // script preserved
     successorOutBox.tokens == SELF.tokens // tokens preserved
 
+  val validBoxes = validConfigBox && validRegistryInBox && validReservedResolverBox && validSuccessorBox
+
   sigmaProp(
-    validRegistryInBox &&
-    validReservedResolverBox &&
+    validBoxes &&
     validReservedResolverStateUpdate &&
     isNewResolver &&
-    validFundsPaid &&
-    validSuccessorBox
+    validFundsPaid
   )
 }

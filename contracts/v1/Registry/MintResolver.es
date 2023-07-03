@@ -51,7 +51,7 @@
   val resolveAddress = requestInBox.R8[Coll[Byte]].get
 
   // nfts
-  val expectedNftId = INPUTS(0).id
+  val expectedResolverNftId = INPUTS(0).id
 
   // validity
   // valid registry in box
@@ -75,8 +75,9 @@
   }
 
   val validResolverBox = {
+    val scriptHashes = config.R5[Coll[Coll[Byte]]].get
     // valid script
-    val validScript = blake2b256(resolverOutBox.propositionBytes) == fromBase16("$resolverScriptHash")
+    val validScript = blake2b256(resolverOutBox.propositionBytes) == scriptHashes(1)
     // valid registers
     val validOwnerProp = resolverOutBox.R4[SigmaProp].get == buyerProp
     val validOutLabel = resolverOutBox.R5[Coll[Byte]].get == label
@@ -84,7 +85,7 @@
     val validAddress = resolverOutBox.R7[Coll[Byte]].get == resolveAddress
     // valid tokens
     val nft = resolverOutBox.tokens(0)
-    val validOutNft = nft._1 == expectedNftId && nft._2 == 1L
+    val validOutNft = nft._1 == expectedResolverNftId && nft._2 == 1L
     val validTokens = resolverOutBox.tokens.size == 1
 
     validScript &&
@@ -101,7 +102,7 @@
     val resolversProof = getVar[Coll[Byte]](1).get
     val currentResolvers = registryInBox.R4[AvlTree].get
 
-    val insertOps: Coll[(Coll[Byte], Coll[Byte])] = Coll((hashedResolver, expectedNftId)) // expectedNftId validated in validResolverBox
+    val insertOps: Coll[(Coll[Byte], Coll[Byte])] = Coll((hashedResolver, expectedResolverNftId)) // expectedResolverNftId validated in validResolverBox
     val expectedResolvers = currentResolvers.insert(insertOps, resolversProof).get
     val updatedResolvers = registryOutBox.R4[AvlTree].get
 
