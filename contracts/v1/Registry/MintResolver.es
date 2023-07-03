@@ -75,9 +75,11 @@
   }
 
   val validResolverBox = {
-    val scriptHashes = config.R5[Coll[Coll[Byte]]].get
-    // valid script
-    val validScript = blake2b256(resolverOutBox.propositionBytes) == scriptHashes(1)
+    val resolverHashes = config.R5[Coll[Coll[Coll[Byte]]]].get(1)
+    val validScript = resolverHashes.exists({ (hash: Coll[Byte]) =>
+      hash == blake2b256(resolverOutBox.propositionBytes)
+    })
+
     // valid registers
     val validOwnerProp = resolverOutBox.R4[SigmaProp].get == buyerProp
     val validOutLabel = resolverOutBox.R5[Coll[Byte]].get == label

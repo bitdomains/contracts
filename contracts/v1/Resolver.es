@@ -67,11 +67,12 @@
 
   val isOwnerUnchanged = ownerProp == successor.R4[SigmaProp].get
 
-  // either script is unchanged or is updated to match the script hash in config box
+  // either script is unchanged or is updated to match a valid script hash in config box
   val validScript = if (action == ActionUpdateScript) {
-      val scriptHashes = config.R5[Coll[Coll[Byte]]].get
+      val resolverHashes = config.R5[Coll[Coll[Coll[Byte]]]].get(1)
+      val validVersion = resolverHashes.exists({ (hash: Coll[Byte]) => hash == blake2b256(successor.propositionBytes) })
 
-      isOwnerUnchanged && blake2b256(successor.propositionBytes) == scriptHashes(1)
+      isOwnerUnchanged && validVersion
     } else {
       SELF.propositionBytes == successor.propositionBytes
     }
