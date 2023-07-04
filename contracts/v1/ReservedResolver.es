@@ -31,13 +31,9 @@
   val registryInBox = INPUTS(0)
   val mintResolverInBox = INPUTS(1)
 
-  // nfts
-  val registryNft = fromBase16("$registryNft")
-  val mintResolverNft = fromBase16("$mintResolverNft")
-
   // validation
-  val isMintResolverTx = registryInBox.tokens(0)._1 == registryNft &&
-    mintResolverInBox.tokens(0)._1 == mintResolverNft
+  val isMintResolverTx = registryInBox.tokens(0)._1 == fromBase16("$registryNft") &&
+    mintResolverInBox.tokens(0)._1 == fromBase16("$mintResolverNft")
 
   sigmaProp(isMintResolverTx)
 }

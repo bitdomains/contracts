@@ -55,11 +55,14 @@
   val validConfigBox = config.tokens(0)._1 == fromBase16("$configNft")
 
   val validReservedResolverBox = {
-    val scriptHashes = config.R5[Coll[Coll[Byte]]].get
-    // valid script
-    val validScript = blake2b256(resolverOutBox.propositionBytes) == scriptHashes(0)
+    val reserveResolverHashes = config.R5[Coll[Coll[Coll[Byte]]]].get(0)
+    val validScript = reserveResolverHashes.exists({ (hash: Coll[Byte]) =>
+      hash == blake2b256(resolverOutBox.propositionBytes)
+    })
+
     // valid registers
-    val validHashedResolver = resolverOutBox.R4[Coll[Byte]].get == hashedResolverReservation
+    val validHashedResolver =
+      resolverOutBox.R4[Coll[Byte]].get == hashedResolverReservation
     val validBuyerProp = resolverOutBox.R5[SigmaProp].get == buyerProp
     val validAddress = resolverOutBox.R6[Coll[Byte]].get == resolveAddress
     // valid nft
@@ -73,7 +76,9 @@
     val reservationProof = getVar[Coll[Byte]](1).get
     val currentState = registryInBox.R5[AvlTree].get
 
-    val insertOps: Coll[(Coll[Byte], Coll[Byte])] = Coll((hashedResolverReservation, expectedNftId))
+    val insertOps: Coll[(Coll[Byte], Coll[Byte])] = Coll(
+      (hashedResolverReservation, expectedNftId)
+    )
     val expectedState = currentState.insert(insertOps, reservationProof).get
     val providedUpdatedTree = registryOutBox.R5[AvlTree].get
 
@@ -96,15 +101,17 @@
     true
   }
 
-  val validSuccessorBox = successorOutBox.propositionBytes == SELF.propositionBytes && // script preserved
-    successorOutBox.tokens == SELF.tokens // tokens preserved
+  val validSuccessorBox =
+    successorOutBox.propositionBytes == SELF.propositionBytes && // script preserved
+      successorOutBox.tokens == SELF.tokens // tokens preserved
 
-  val validBoxes = validConfigBox && validRegistryInBox && validReservedResolverBox && validSuccessorBox
+  val validBoxes =
+    validConfigBox && validRegistryInBox && validReservedResolverBox && validSuccessorBox
 
   sigmaProp(
     validBoxes &&
-    validReservedResolverStateUpdate &&
-    isNewResolver &&
-    validFundsPaid
+      validReservedResolverStateUpdate &&
+      isNewResolver &&
+      validFundsPaid
   )
 }

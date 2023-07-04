@@ -13,6 +13,7 @@ case class ResolverTransactionBuilder(implicit
 ) extends TransactionBuilder {
   private var resolverIn: Option[InputBox] = None
   private var resolverOut: Option[OutBox] = None
+  private var configDataIn: Option[InputBox] = None
 
   def withResolverIn(box: InputBox): this.type = {
     this.resolverIn = Some(box)
@@ -21,6 +22,11 @@ case class ResolverTransactionBuilder(implicit
 
   def withResolverOut(box: OutBox): this.type = {
     this.resolverOut = Some(box)
+    this
+  }
+
+  def withConfigDataIn(box: InputBox): this.type = {
+    this.configDataIn = Some(box)
     this
   }
 
@@ -37,6 +43,7 @@ case class ResolverTransactionBuilder(implicit
           resolverOut
         ).flatten: _*
       )
+      .addDataInputs(Seq(configDataIn).flatten: _*)
       .build()
   }
 }

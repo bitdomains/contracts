@@ -22,9 +22,9 @@
   //
   // REGISTERS
   //  R4: MUT (AvlTree) TLD state tree. Maintains valid registrars such as "erg" & "ada".
-  //  R5: MUT (Coll[Coll[Byte]]) Collection of script hashes for contracts making up the bitdomains protocol.
-  //        R5[0] = ReservedResolverHash
-  //        R5[1] = ResolverHash
+  //  R5: MUT (Coll[Coll[Coll[Byte]]]) Collection of script hash versions for contracts making up the bitdomains protocol.
+  //        R5[0] = ReserveResolverHashes, R5[0][0] = initial version, R5[0][1] = v1, R5[0][size-1] = latest version
+  //        R5[1] = ResolverHashes, R5[1][0] = initial version ... etc
   //  R6: MUT ((Coll[Int], Coll[Byte])) Pair of prices for protocol actions in USD and the NFT id of the oracle pool providing the price feed.
   //        R6._1[0] = ResolverReservation price
   //        R6._1[1] = MintResolver price
