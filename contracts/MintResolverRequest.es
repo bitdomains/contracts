@@ -30,28 +30,18 @@
   val isRefundTx = INPUTS.size == 1
 
   val validMintResolverTx = {
-    // indexes
-    val registryIndex = 0
-    val mintResolverIndex = 1
+    val registryInBox = INPUTS(0)
+    val mintResolverInBox = INPUTS(1)
 
-    // boxes
-    val registryInBox = INPUTS(registryIndex)
-    val mintResolverInBox = INPUTS(mintResolverIndex)
+    val isMintResolverTx = registryInBox.tokens(0)._1 == fromBase16("$registryNft") &&
+      mintResolverInBox.tokens(0)._1 == fromBase16("$mintResolverNft")
 
-    // nfts
-    val registryNft = fromBase16("$registryNft")
-    val mintResolverNft = fromBase16("$mintResolverNft")
-
-    // validation
-    val isMintResolverTx = registryInBox.tokens(0)._1 == registryNft &&
-      mintResolverInBox.tokens(0)._1 == mintResolverNft
-
-    sigmaProp(isMintResolverTx)
+    isMintResolverTx
   }
 
   val buyerProp = SELF.R5[SigmaProp].get
 
   if (isRefundTx) {
     buyerProp
-  } else validMintResolverTx
+  } else sigmaProp(validMintResolverTx)
 }
