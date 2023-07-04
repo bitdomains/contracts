@@ -13,14 +13,28 @@ class Playground
     withBlockchain { implicit ctx =>
       val script =
         s"""{
-           |  val a = 5
-           |  val b = 6
+           |  val c1 = Coll(Coll(4, 2), Coll(1), Coll(5))
+           |  val c3 = c1.flatMap{(v: Coll[Int]) => v}
            |
-           |  val expected = -11
+           |  val expected = Coll(4, 2, 1, 5)
+           |  val sameEl = c3 == expected
            |
-           |  val t = expected == - b - a
+           |  val expectedLastEl = 5
+           |  val lastEl = c3(c3.size - 1)
+           |  val sameLastEl = lastEl == expectedLastEl
            |
-           |  sigmaProp(t)
+           |  val s1 = fromBase16("74657374") // "test"
+           |  val s2 = fromBase16("737562") // "sub"
+           |  val s3 = fromBase16("657267") // "erg"
+           |  val strs = Coll(s1, s2, s3)
+           |
+           |  //val combined = strs.fold(Coll[Coll[Byte]](), {(a: Coll[Byte], b: Coll[Byte]) => a ++ b})
+           |
+           |  val combined = strs.flatMap{(v: Coll[Byte]) => v}
+           |  val actualHash = blake2b256(combined)
+           |  val expectedHash = blake2b256(s1 ++ s2 ++ s3)
+           |
+           |  sigmaProp(expectedHash == actualHash)
            |}""".stripMargin
       val tb = ctx.newTxBuilder()
       val minStorageRent = 100000L

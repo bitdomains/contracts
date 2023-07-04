@@ -21,11 +21,6 @@
   //  2: (Coll[Byte]) Reservations AVL tree lookup for resolver hash to get nft & remove reservation hash
   //                    from Reservations AVL tree
 
-  // constants
-  // Could use the config box
-  val MinLabelLength = 2
-  val MaxLabelLength = 20 // could probably be longer
-
   // indexes
   val registryIndex = 0
   val selfIndex = 1
@@ -45,10 +40,13 @@
   // registers
   val requestReservedResolverNftId = requestInBox.R4[Coll[Byte]].get
   val buyerProp = requestInBox.R5[SigmaProp].get
-  val label = requestInBox.R6[Coll[Byte]].get
-  val tld = requestInBox.R7[Coll[Byte]].get
-  val hashedResolver = blake2b256(label ++ tld)
-  val resolveAddress = requestInBox.R8[Coll[Byte]].get
+  val labels = requestInBox.R6[Coll[Coll[Byte]]].get
+  val tld = labels(labels.size - 1)
+  val combinedLabels = labels.flatMap({ (label: Coll[Byte]) =>
+    label
+  })
+  val hashedResolver = blake2b256(combinedLabels)
+  val resolveAddress = requestInBox.R7[Coll[Byte]].get
 
   // nfts
   val expectedResolverNftId = INPUTS(0).id
@@ -58,13 +56,6 @@
   val validRegistryInBox = registryInBox.tokens(0)._1 == fromBase16("$registryNft")
 
   val validConfigBox = config.tokens(0)._1 == fromBase16("$configNft")
-
-  val validLabel = {
-    val validLength = label.size <= MaxLabelLength && label.size >= MinLabelLength
-    // TODO label doesnt contain invalid characters
-
-    validLength
-  }
 
   val validTld = {
     val tldProof = getVar[Coll[Byte]](0).get
@@ -76,15 +67,15 @@
 
   val validResolverBox = {
     val resolverHashes = config.R5[Coll[Coll[Coll[Byte]]]].get(1)
+    // users don't need to mint the newest resolver version
     val validScript = resolverHashes.exists({ (hash: Coll[Byte]) =>
       hash == blake2b256(resolverOutBox.propositionBytes)
     })
 
     // valid registers
     val validOwnerProp = resolverOutBox.R4[SigmaProp].get == buyerProp
-    val validOutLabel = resolverOutBox.R5[Coll[Byte]].get == label
-    val validOutTld = resolverOutBox.R6[Coll[Byte]].get == tld
-    val validAddress = resolverOutBox.R7[Coll[Byte]].get == resolveAddress
+    val validLabels = resolverOutBox.R5[Coll[Coll[Byte]]].get == labels
+    val validAddress = resolverOutBox.R6[Coll[Byte]].get == resolveAddress
     // valid tokens
     val nft = resolverOutBox.tokens(0)
     val validOutNft = nft._1 == expectedResolverNftId && nft._2 == 1L
@@ -92,8 +83,7 @@
 
     validScript &&
     validOwnerProp &&
-    validOutLabel &&
-    validOutTld &&
+    validLabels &&
     validAddress &&
     validOutNft &&
     validTokens
@@ -164,7 +154,6 @@
 
   sigmaProp(
     validBoxes &&
-    validLabel &&
     validTld &&
     validReservation &&
     validReservationTreeUpdate &&

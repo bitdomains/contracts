@@ -3,8 +3,10 @@ package org.bitdomains.contracts.mintresolverrequest
 import bitdomains.Constants.mintResolverRequestScript
 import org.bitdomains.contracts.utils.builders.BoxBuilder
 import org.bitdomains.contracts.{hexToBytes, walletSk}
+import org.ergoplatform.appkit.scalaapi.ErgoValueBuilder
 import org.ergoplatform.appkit.{BlockchainContext, ErgoValue, OutBox, SigmaProp}
 import sigmastate.eval.CostingSigmaDslBuilder.GroupElement
+import sigmastate.eval.SigmaDsl
 import special.sigma.GroupElement
 
 case class MintResolverRequestBoxBuilder(implicit ctx: BlockchainContext)
@@ -45,13 +47,16 @@ case class MintResolverRequestBoxBuilder(implicit ctx: BlockchainContext)
   }
 
   override def build(): OutBox = {
+    val labels = Array(label.getBytes, tld.getBytes)
+    val labelsColl =
+      SigmaDsl.Colls.fromArray(labels.map(SigmaDsl.Colls.fromArray(_)))
+
     this
       .partialBuild()
       .registers(
         ErgoValue.of(hexToBytes(reservedResolverNftId)),
         ErgoValue.of(buyerProp),
-        ErgoValue.of(label.getBytes),
-        ErgoValue.of(tld.getBytes),
+        ErgoValueBuilder.buildFor(labelsColl),
         ErgoValue.of(resolveAddress.getBytes)
       )
       .build()
