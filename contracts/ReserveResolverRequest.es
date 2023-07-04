@@ -43,11 +43,8 @@
     val registryInBox = INPUTS(0)
     val resolverReservationInBox = INPUTS(1)
 
-    val registryNft = fromBase16("$registryNft")
-    val resolverReservationNft = fromBase16("$resolverReservationNft")
-
-    val isReserveResolverTx = registryInBox.tokens(0)._1 == registryNft &&
-      resolverReservationInBox.tokens(0)._1 == resolverReservationNft
+    val isReserveResolverTx = registryInBox.tokens(0)._1 == fromBase16("$registryNft") &&
+      resolverReservationInBox.tokens(0)._1 == fromBase16("$resolverReservationNft")
 
     sigmaProp(isReserveResolverTx)
   }
