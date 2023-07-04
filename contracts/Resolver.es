@@ -36,9 +36,8 @@
   //
   // REGISTERS
   //  R4: MUT   (SigmaProp)     Owners sigma proposition.
-  //  R5: CONST (Coll[Byte])    Label (name) that is used to resolve an address.
-  //  R6: CONST (Coll[Byte])    Registrar/TLD, "erg" for example.
-  //  R7: MUT   (Coll[Byte])    Address to resolve to, this should be set based on the TLD.
+  //  R5: CONST (Coll[Coll[Byte]])    Labels making up the domain name. I.e [myname, erg] == "myname.erg"
+  //  R6: MUT   (Coll[Byte])    Address to resolve to, this should be set based on the TLD.
   //                              For example if TLD is "erg" an Ergo address, if TLD is "ada" a Cardano address.
   // TOKENS
   //  0: (CONST) Nft uniquely identifying this resoler (label ++ tld combination).
@@ -60,9 +59,8 @@
 
   val validConfigBox = config.tokens(0)._1 == fromBase16("$configNft")
 
-  // label, tld, nft unchanged
-  val validImmutableValues = SELF.R5[Coll[Byte]].get == successor.R5[Coll[Byte]].get &&
-    SELF.R6[Coll[Byte]].get == successor.R6[Coll[Byte]].get &&
+  // labels, nft unchanged
+  val validImmValues = SELF.R5[Coll[Coll[Byte]]].get == successor.R5[Coll[Coll[Byte]]].get &&
     SELF.tokens(0) == successor.tokens(0)
 
   val isOwnerUnchanged = ownerProp == successor.R4[SigmaProp].get
@@ -77,7 +75,7 @@
       SELF.propositionBytes == successor.propositionBytes
     }
 
-  val validAddressUpdate = isOwnerUnchanged && SELF.R7[Coll[Byte]].get != successor.R7[Coll[Byte]].get
+  val validAddressUpdate = isOwnerUnchanged && SELF.R6[Coll[Byte]].get != successor.R6[Coll[Byte]].get
 
   val validOwnershipTransfer = ownerProp != successor.R4[SigmaProp].get
 
@@ -88,7 +86,7 @@
 
   ownerProp && sigmaProp(
     validConfigBox &&
-    validImmutableValues &&
+    validImmValues &&
     validScript &&
     validAction
   )

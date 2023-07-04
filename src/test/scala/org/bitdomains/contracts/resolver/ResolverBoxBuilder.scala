@@ -3,7 +3,9 @@ package org.bitdomains.contracts.resolver
 import bitdomains.Constants.resolverScript
 import org.bitdomains.contracts.utils.builders.BoxBuilder
 import org.bitdomains.contracts.walletSk
+import org.ergoplatform.appkit.scalaapi.ErgoValueBuilder
 import org.ergoplatform.appkit.{BlockchainContext, ErgoValue, OutBox, SigmaProp}
+import sigmastate.eval.SigmaDsl
 
 case class ResolverBoxBuilder(implicit ctx: BlockchainContext)
     extends BoxBuilder(resolverScript) {
@@ -36,12 +38,15 @@ case class ResolverBoxBuilder(implicit ctx: BlockchainContext)
   }
 
   override def build(): OutBox = {
+    val labels = Array(label.getBytes, tld.getBytes)
+    val labelsColl =
+      SigmaDsl.Colls.fromArray(labels.map(SigmaDsl.Colls.fromArray(_)))
+
     this
       .partialBuild()
       .registers(
         ErgoValue.of(ownerProp),
-        ErgoValue.of(label.getBytes),
-        ErgoValue.of(tld.getBytes),
+        ErgoValueBuilder.buildFor(labelsColl),
         ErgoValue.of(resolveAddress.getBytes)
       )
       .build()

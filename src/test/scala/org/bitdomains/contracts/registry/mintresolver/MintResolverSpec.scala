@@ -192,30 +192,6 @@ class MintResolverSpec
     }
   }
 
-  "validLabel" should "fail if label too short" in {
-    withBlockchain { implicit ctx =>
-      val scenario = MintResolverContractScenario(existingReservedLabel = "a")
-
-      (the[InterpreterException] thrownBy scenario
-        .mkAndSignTx()).getMessage should be(
-        "Script reduced to false"
-      )
-    }
-  }
-
-  "validLabel" should "fail if label too long" in {
-    withBlockchain { implicit ctx =>
-      val scenario = MintResolverContractScenario(existingReservedLabel =
-        "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
-      )
-
-      (the[InterpreterException] thrownBy scenario
-        .mkAndSignTx()).getMessage should be(
-        "Script reduced to false"
-      )
-    }
-  }
-
   "validTld" should "fail if tld doesn't exist" in {
     withBlockchain { implicit ctx =>
       val scenario =

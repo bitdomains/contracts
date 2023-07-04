@@ -23,9 +23,8 @@
   //  R4: (Coll[Byte])    Reserved resolver box nft id. Provided so off-chain bots can find the reservation box
   //                        required for `Registry.MintResolver` txns.
   //  R5: (SigmaProp)     Sigma proposition of the buyer, used to refund the reservation to the buyer.
-  //  R6: (Coll[Byte])    Label (name) that is used to resolve an address.
-  //  R7: (Coll[Byte])    Registrar/TLD, "erg" for example.
-  //  R8: (Coll[Byte])    Address to resolve to, this should be set based on the TLD.
+  //  R6: (Coll[Coll[Byte]])    Labels making up the domain name. I.e [myname, erg] == "myname.erg"
+  //  R7: (Coll[Byte])    Address to resolve to, this should be set based on the TLD.
   //                        For example if TLD is "erg" an Ergo address, if TLD is "ada" a Cardano address.
 
   val isRefundTx = INPUTS.size == 1
