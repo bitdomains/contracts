@@ -39,10 +39,10 @@
   //  2: (Coll[Byte]) Avl insert operation proof
 
   // constants
-  val ActionUpdateTld = 1.toByte
-  val ActionUpdateScriptHashes = 2.toByte
-  val ActionUpdatePricing = 3.toByte
-  val ActionUpdateFees = 4.toByte
+  val ActionUpdateRegistrars = 0.toByte
+  val ActionUpdateScriptHashes = 1.toByte
+  val ActionUpdatePricing = 2.toByte
+  val ActionUpdateFees = 3.toByte
 
   // action to perform flag
   val action = getVar[Byte](0).get
@@ -55,11 +55,27 @@
   val adminInBox = INPUTS(adminIndex)
   val adminOutBox = OUTPUTS(adminIndex)
 
-  // nfts
-  val adminNft = fromBase16("$adminNft")
+  val isRegistrarsUnchanged = SELF.R4[AvlTree].get == successorBox.R4[AvlTree].get
+  val isScriptHashesUnchanged = SELF.R5[Coll[Coll[Coll[Byte]]]].get == successorBox.R5[Coll[Coll[Coll[Byte]]]].get
+  val isPricingUnchanged = SELF.R6[(Coll[Int], Coll[Byte])].get == successorBox.R6[(Coll[Int], Coll[Byte])].get
+  val isFeesUnchanged = SELF.R7[Coll[(SigmaProp, Int)]].get == successorBox.R7[Coll[(SigmaProp, Int)]].get
+
+  val actionIdExcludeCheckMap: Coll[(Byte, Boolean)] = Coll(
+    (ActionUpdateRegistrars, isRegistrarsUnchanged),
+    (ActionUpdateScriptHashes, isScriptHashesUnchanged)
+//    (ActionUpdatePricing, isPricingUnchanged),
+//    (ActionUpdateFees, isFeesUnchanged)
+  )
+
+  def checkPreserveCondtionsForAction(action: Byte): Boolean = {
+    val pairsForAction = actionIdExcludeCheckMap.filter({(a: (Byte, Boolean)) => a._1 != action})
+    val actionConditions = pairsForAction.map({(a: (Byte, Boolean)) => a._2})
+
+    allOf(actionConditions)
+  }
 
   // validity
-  val validUpdateTld = {
+  val validUpdateRegistrars = {
     val cfgTldState = SELF.R4[AvlTree].get
     val proof = getVar[Coll[Byte]](2).get
 
@@ -76,20 +92,21 @@
   val validSuccessor = successorBox.propositionBytes == SELF.propositionBytes &&
     successorBox.tokens == SELF.tokens
 
-  val isAdmin = adminInBox.tokens(0)._1 == adminNft
+  val isAdmin = adminInBox.tokens(0)._1 == fromBase16("$adminNft")
 
   // not strictly needed but prevent loss of admin box in case of badly formed txn
   val validAdminBox = adminInBox.propositionBytes == adminOutBox.propositionBytes &&
     adminInBox.tokens(0) == adminOutBox.tokens(0)
 
-  val validAction = if (action == ActionUpdateTld) {
-    validUpdateTld
+  val validAction = if (action == ActionUpdateRegistrars) {
+    validUpdateRegistrars
   } else false
 
   sigmaProp(
     isAdmin &&
     validAdminBox &&
     validSuccessor &&
+    checkPreserveCondtionsForAction(action) &&
     validAction
   )
 }

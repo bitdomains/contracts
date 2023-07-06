@@ -10,8 +10,20 @@ sealed trait ConfigAction {
   def id: Byte
 }
 
-case object UpdateTldConfigAction extends ConfigAction {
+case object UpdateRegistrarsConfigAction extends ConfigAction {
+  override def id: Byte = 0
+}
+
+case object UpdateScriptHashesAction extends ConfigAction {
   override def id: Byte = 1
+}
+
+case object UpdatePricingAction extends ConfigAction {
+  override def id: Byte = 2
+}
+
+case object UpdateFeesAction extends ConfigAction {
+  override def id: Byte = 3
 }
 
 case class ConfigContractScenario(implicit
@@ -19,7 +31,7 @@ case class ConfigContractScenario(implicit
 ) extends ContractScenario[ConfigTransactionBuilder] {
   var contextVars: Seq[ContextVar] = Seq()
 
-  var action: ConfigAction = UpdateTldConfigAction
+  var action: ConfigAction = UpdateRegistrarsConfigAction
 
   var insertTld: String = "erg"
   var tldState: RegistryState = defaultRegistryMap
@@ -44,7 +56,7 @@ case class ConfigContractScenario(implicit
     val opResult = tldState.insert((hashedTld, bytesToHex(tld.getBytes)))
 
     contextVars = contextVars ++ Seq(
-      new ContextVar(0.toByte, ErgoValue.of(UpdateTldConfigAction.id)),
+      new ContextVar(0.toByte, ErgoValue.of(UpdateRegistrarsConfigAction.id)),
       new ContextVar(1.toByte, ErgoValue.of(tld.getBytes)),
       new ContextVar(2.toByte, opResult.proof.ergoValue)
     )
