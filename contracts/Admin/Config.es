@@ -60,6 +60,10 @@
   val isPricingUnchanged = SELF.R6[(Coll[Int], Coll[Byte])].get == successorBox.R6[(Coll[Int], Coll[Byte])].get
   val isFeesUnchanged = SELF.R7[Coll[(SigmaProp, Int)]].get == successorBox.R7[Coll[(SigmaProp, Int)]].get
 
+  // map of action id -> condition for that action to be excluded from checks
+  // e.g. if the action is update registrars then we shouldn't check that registrars are unchanged because
+  // that action is meant to update registrars, however for any other action we
+  // want to ensure the registrars are unchanged to protect against malformed transactions.
   val actionIdExcludeCheckMap: Coll[(Byte, Boolean)] = Coll(
     (ActionUpdateRegistrars, isRegistrarsUnchanged),
     (ActionUpdateScriptHashes, isScriptHashesUnchanged)
@@ -109,11 +113,8 @@
   val validAdminBox = adminInBox.propositionBytes == adminOutBox.propositionBytes &&
     adminInBox.tokens(0) == adminOutBox.tokens(0)
 
-  val validAction = if (false) {
-    validUpdateRegistrars
-  } else {
-    true
-  }
+  val validAction = action == ActionUpdateRegistrars && validUpdateRegistrars ||
+    action == ActionUpdateScriptHashes && validScriptHashes
 
   sigmaProp(
     isAdmin &&

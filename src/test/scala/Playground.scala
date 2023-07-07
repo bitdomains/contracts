@@ -15,8 +15,10 @@ class Playground
         s"""{
            |
            |    val noOp = {
-           |      val x = getVar[Int](55).get
-           |      x == 5
+           |      val x = getVar[Byte](55).get
+           |      val hash = blake2b256(Coll(x))
+           |
+           |      x == 5.toByte && hash == Coll(2.toByte)
            |    }
            |
            |    val result = if (false) {
