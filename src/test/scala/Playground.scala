@@ -1,5 +1,5 @@
 import org.bitdomains.contracts._
-import org.ergoplatform.appkit.{Address, ConstantsBuilder}
+import org.ergoplatform.appkit.{Address, ConstantsBuilder, ErgoToken}
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should
 import scorex.crypto.hash.Blake2b256
@@ -13,28 +13,24 @@ class Playground
     withBlockchain { implicit ctx =>
       val script =
         s"""{
-           |  val c1 = Coll(Coll(4, 2), Coll(1), Coll(5))
-           |  val c3 = c1.flatMap{(v: Coll[Int]) => v}
            |
-           |  val expected = Coll(4, 2, 1, 5)
-           |  val sameEl = c3 == expected
+           |    val noOp = {
+           |      val x = getVar[Byte](55).get
+           |      val hash = blake2b256(Coll(x))
            |
-           |  val expectedLastEl = 5
-           |  val lastEl = c3(c3.size - 1)
-           |  val sameLastEl = lastEl == expectedLastEl
+           |      x == 5.toByte && hash == Coll(2.toByte)
+           |    }
            |
-           |  val s1 = fromBase16("74657374") // "test"
-           |  val s2 = fromBase16("737562") // "sub"
-           |  val s3 = fromBase16("657267") // "erg"
-           |  val strs = Coll(s1, s2, s3)
+           |    val result = if (false) {
+           |      noOp
+           |    } else {
+           |      true
+           |    }
            |
-           |  //val combined = strs.fold(Coll[Coll[Byte]](), {(a: Coll[Byte], b: Coll[Byte]) => a ++ b})
+           |    val otherCond = true
            |
-           |  val combined = strs.flatMap{(v: Coll[Byte]) => v}
-           |  val actualHash = blake2b256(combined)
-           |  val expectedHash = blake2b256(s1 ++ s2 ++ s3)
+           |    sigmaProp(otherCond && result)
            |
-           |  sigmaProp(expectedHash == actualHash)
            |}""".stripMargin
       val tb = ctx.newTxBuilder()
       val minStorageRent = 100000L

@@ -10,8 +10,20 @@ sealed trait ConfigAction {
   def id: Byte
 }
 
-case object UpdateTldConfigAction extends ConfigAction {
+case object UpdateRegistrarsConfigAction extends ConfigAction {
+  override def id: Byte = 0
+}
+
+case object UpdateScriptHashesAction extends ConfigAction {
   override def id: Byte = 1
+}
+
+case object UpdatePricingAction extends ConfigAction {
+  override def id: Byte = 2
+}
+
+case object UpdateFeesAction extends ConfigAction {
+  override def id: Byte = 3
 }
 
 case class ConfigContractScenario(implicit
@@ -19,7 +31,7 @@ case class ConfigContractScenario(implicit
 ) extends ContractScenario[ConfigTransactionBuilder] {
   var contextVars: Seq[ContextVar] = Seq()
 
-  var action: ConfigAction = UpdateTldConfigAction
+  var action: ConfigAction = UpdateRegistrarsConfigAction
 
   var insertTld: String = "erg"
   var tldState: RegistryState = defaultRegistryMap
@@ -37,17 +49,13 @@ case class ConfigContractScenario(implicit
 
   var adminOut: AdminBoxBuilder = AdminBoxBuilder()
 
-  def updateTldAction(
-      tld: String = insertTld
-  ): Unit = {
-    val hashedTld = Blake2b256(tld)
-    val opResult = tldState.insert((hashedTld, bytesToHex(tld.getBytes)))
+  var tldInsertProof: Array[Byte] = Array()
 
-    contextVars = contextVars ++ Seq(
-      new ContextVar(0.toByte, ErgoValue.of(UpdateTldConfigAction.id)),
-      new ContextVar(1.toByte, ErgoValue.of(tld.getBytes)),
-      new ContextVar(2.toByte, opResult.proof.ergoValue)
-    )
+  def updateTldAction(): Unit = {
+    val hashedTld = Blake2b256(insertTld)
+    val opResult = tldState.insert((hashedTld, bytesToHex(insertTld.getBytes)))
+
+    tldInsertProof = opResult.proof.bytes
   }
 
   override def txBuilder: ConfigTransactionBuilder = {
@@ -60,7 +68,20 @@ case class ConfigContractScenario(implicit
     val adminOutBox = adminOut.build()
     var configInBox = configIn.build().convertToInputWith(fakeTxId1, fakeIndex)
 
-    updateTldAction()
+    if (action == UpdateRegistrarsConfigAction) {
+      updateTldAction()
+    }
+
+    contextVars = contextVars ++ Seq(
+      new ContextVar(0.toByte, ErgoValue.of(action.id)),
+      // all context vars should always be added regardless of which action is performed
+      // this is because we can't control inlining of ValDef's in the ergo script evaluation
+      // which means the context var could attempt to be accessed even if it's not used
+      // If the context var is not present, the script will fail so provide placeholders
+      // if the value is not actually used
+      new ContextVar(1.toByte, ErgoValue.of(insertTld.getBytes)),
+      new ContextVar(2.toByte, ErgoValue.of(tldInsertProof))
+    )
 
     val configOutBox = configOut.withTldState(tldState).build()
     configInBox = configInBox.withContextVars(contextVars: _*)
