@@ -56,7 +56,6 @@ case class ConfigContractScenario(implicit
     val opResult = tldState.insert((hashedTld, bytesToHex(tld.getBytes)))
 
     contextVars = contextVars ++ Seq(
-      new ContextVar(0.toByte, ErgoValue.of(UpdateRegistrarsConfigAction.id)),
       new ContextVar(1.toByte, ErgoValue.of(tld.getBytes)),
       new ContextVar(2.toByte, opResult.proof.ergoValue)
     )
@@ -72,7 +71,12 @@ case class ConfigContractScenario(implicit
     val adminOutBox = adminOut.build()
     var configInBox = configIn.build().convertToInputWith(fakeTxId1, fakeIndex)
 
-    updateTldAction()
+    contextVars =
+      contextVars ++ Seq(new ContextVar(0.toByte, ErgoValue.of(action.id)))
+
+    if (action == UpdateRegistrarsConfigAction) {
+      updateTldAction()
+    }
 
     val configOutBox = configOut.withTldState(tldState).build()
     configInBox = configInBox.withContextVars(contextVars: _*)

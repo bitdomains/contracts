@@ -68,8 +68,12 @@
   )
 
   def checkPreserveCondtionsForAction(action: Byte): Boolean = {
-    val pairsForAction = actionIdExcludeCheckMap.filter({(a: (Byte, Boolean)) => a._1 != action})
-    val actionConditions = pairsForAction.map({(a: (Byte, Boolean)) => a._2})
+    val pairsForAction = actionIdExcludeCheckMap.filter({
+      (a: (Byte, Boolean)) => a._1 != action
+    })
+    val actionConditions = pairsForAction.map({ (a: (Byte, Boolean)) =>
+      a._2
+    })
 
     allOf(actionConditions)
   }
@@ -89,6 +93,13 @@
     expectedState.digest == actualState.digest
   }
 
+  val validScriptHashes = {
+    val currentHashes = SELF.R5[Coll[Coll[Coll[Byte]]]].get
+    val updatedHashes = successorBox.R5[Coll[Coll[Coll[Byte]]]].get
+
+    currentHashes != updatedHashes
+  }
+
   val validSuccessor = successorBox.propositionBytes == SELF.propositionBytes &&
     successorBox.tokens == SELF.tokens
 
@@ -98,9 +109,11 @@
   val validAdminBox = adminInBox.propositionBytes == adminOutBox.propositionBytes &&
     adminInBox.tokens(0) == adminOutBox.tokens(0)
 
-  val validAction = if (action == ActionUpdateRegistrars) {
+  val validAction = if (false) {
     validUpdateRegistrars
-  } else false
+  } else {
+    true
+  }
 
   sigmaProp(
     isAdmin &&

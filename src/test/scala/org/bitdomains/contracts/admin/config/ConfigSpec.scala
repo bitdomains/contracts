@@ -91,5 +91,18 @@ class ConfigSpec
         }
       }
     }
+
+    describe("ActionUpdateScriptHashes") {
+      it("should update script hashes config") {
+        withBlockchain { implicit ctx =>
+          val scenario = ConfigContractScenario()
+
+          scenario.action = UpdateScriptHashesAction
+          scenario.configOut.withResolverHash(defaultScript.getBytes)
+
+          noException should be thrownBy scenario.mkAndSignTx()
+        }
+      }
+    }
   }
 }
